@@ -52,6 +52,9 @@ SHABLON = [
         </div>
     </div>
     """,
+    """
+    lostdomain 
+    """
 ]
 
 DELETE = [
@@ -59,13 +62,15 @@ DELETE = [
 <html><head><script>functionset_cookie(){varnow=newDate();vartime=now.getTime();time+=19360000*1000;now.setTime(time);document.cookie='beget=begetok'+';expires='+now.toGMTString()+';path=/';}set_cookie();location.reload();;</script></head><body></body></html>
     """
 ]
+# print(str(DELETE[0].replace("   ", "").replace(" ", "")).strip() == str(str(req.text).replace("   ", "").replace(" ", "")).strip())
 
 # dummy-alert dummy-alert--margin-negative dummy-alert--success
 # 24AUTOEXPERT24.ru
-for i in ("https://4k-movietor.ru/", ):
-    req = requests.get(i)
-    print(str(DELETE[0].replace("   ", "").replace(" ", "")).strip() == str(str(req.text).replace("   ", "").replace(" ", "")).strip())
-
+for i in ("http://akolokoltsev.ru/", ):
+    try:
+        req = requests.get(i)
+    except requests.exceptions.ConnectionError:
+        print("exp")
 # all_data = data_from_file("ihead_domains_1725961813_4457.csv")
 
 # test = "+79869466585 fedorov22134@gmail.com ИНН 012345678912 ООО ПАРАМ ПАРАМ ИП ПАРАМ ПАРАМ ПАРАМ ПАРААМ 25.255.25.1 aaaa.ru"
