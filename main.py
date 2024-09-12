@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 def data_from_file(filename: str) -> list:
     with open(filename, "r", newline="") as file:
         reader = csv.reader(file, delimiter=' ', quotechar="|")
-        return [row[0].split(";")[:-1] for row in reader]
+        return [row[0].split(";")[:-1] for row in list(reader)[1:] if row[0].split(";")[:-1][0] == "2024-07-15"]
 
 def get_src(html: str, url: str):
     split_comma = html.split("\"")
@@ -66,12 +66,14 @@ DELETE = [
 
 # dummy-alert dummy-alert--margin-negative dummy-alert--success
 # 24AUTOEXPERT24.ru
-for i in ("http://akolokoltsev.ru/", ):
-    try:
-        req = requests.get(i)
-    except requests.exceptions.ConnectionError:
-        print("exp")
-# all_data = data_from_file("ihead_domains_1725961813_4457.csv")
+# for i in ("http://akolokoltsev.ru/", ):
+#     try:
+#         req = requests.get(i)
+#     except requests.exceptions.ConnectionError:
+#         print("exp")
+all_data = data_from_file("ihead_domains_1725961813_4457.csv")
+for src in all_data:
+    ...
 
 # test = "+79869466585 fedorov22134@gmail.com ИНН 012345678912 ООО ПАРАМ ПАРАМ ИП ПАРАМ ПАРАМ ПАРАМ ПАРААМ 25.255.25.1 aaaa.ru"
 
