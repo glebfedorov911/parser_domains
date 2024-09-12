@@ -9,6 +9,8 @@ from bs4 import BeautifulSoup
 #если сайт пустышка/стандартный - перепроверка
 #если бан от служб рф - удаление
 
+#переделать домены
+
 def data_from_file(filename: str) -> list:
     with open(filename, "r", newline="") as file:
         reader = csv.reader(file, delimiter=' ', quotechar="|")
@@ -19,7 +21,7 @@ def get_src(html: str, url: str):
     return [http for data in split_comma for http in data.split(" ") if "http" in http and http not in (url, url[:-1]) if "http" in data and "://" in data]
 
 def find_email(html: str):
-    return re.findall(r"[a-zA-Z0-9.-]{0,1024}@[a-zA-Z0-9.-]{0,1024}", html)
+    return re.findall(r"[a-zA-Z0-9.-]{1,1024}@[a-zA-Z0-9.-]{1,1024}", html)
 
 def find_phone(html: str):
     return re.findall(r"\+[0-9]{9,15}", html)
@@ -28,16 +30,16 @@ def find_inn(html: str):
     return re.findall(r"ИНН [a-zA-Z0-9.-]{12}", html)
 
 def find_ooo(html: str):
-    return re.findall(r"ООО [a-zA-Zа-яА-Я0-9.-]{0,100} [a-zA-Zа-яА-Я0-9.-]{0,100}", html)
+    return re.findall(r"ООО [a-zA-Zа-яА-Я0-9.-]{1,100} [a-zA-Zа-яА-Я0-9.-]{1,100}", html)
 
 def find_individual(html: str):
-    return re.findall(r"ИП [a-zA-Zа-яА-Я0-9.-]{0,50} [a-zA-Zа-яА-Я0-9.-]{0,50} [a-zA-Zа-яА-Я0-9.-]{0,50}", html)
+    return re.findall(r"ИП [a-zA-Zа-яА-Я0-9.-]{1,50} [a-zA-Zа-яА-Я0-9.-]{1,50} [a-zA-Zа-яА-Я0-9.-]{1,50}", html)
 
 def find_ip(html: str):
     return re.findall(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", html)
 
 def find_domain(html: str):
-    return re.findall(r"\ [a-zA-Zа-яА-Я0-9.-]{0,100}\.[a-zA-Zа-яА-Я]{1,5}", html)
+    return re.findall(r"\ [a-zA-Zа-яА-Я0-9.-]{1,100}\.[a-zA-Zа-яА-Я]{1,3}", html)
 
 SHABLON = [
     """
@@ -60,6 +62,11 @@ SHABLON = [
 DELETE = [
     """
 <html><head><script>functionset_cookie(){varnow=newDate();vartime=now.getTime();time+=19360000*1000;now.setTime(time);document.cookie='beget=begetok'+';expires='+now.toGMTString()+';path=/';}set_cookie();location.reload();;</script></head><body></body></html>
+    """,
+    """
+                <div class="octo">
+                <img src="https://cp.beget.com/img/octo/octo_error.png">
+            </div>
     """
 ]
 # print(str(DELETE[0].replace("   ", "").replace(" ", "")).strip() == str(str(req.text).replace("   ", "").replace(" ", "")).strip())
@@ -71,9 +78,54 @@ DELETE = [
 #         req = requests.get(i)
 #     except requests.exceptions.ConnectionError:
 #         print("exp")
+
+
 all_data = data_from_file("ihead_domains_1725961813_4457.csv")
+bad = good = check_again = 0
+data = {}
 for src in all_data:
-    ...
+    print(src[1])
+    try:
+        req = requests.get("http://" + src[1], timeout=5)
+    except requests.exceptions.ConnectionError:
+        bad += 1
+        continue
+    except requests.exceptions.Timeout:
+        bad += 1
+        continue
+    except requests.exceptions.TooManyRedirects:
+        bad += 1
+        continue
+    
+    if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in DELETE]):
+        bad += 1
+        continue
+    
+    if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in SHABLON]):
+        check_again += 1
+        continue
+
+    data[src[1]] = {}
+    data[src[1]]["email"] = " ".join(find_email(req.text))
+    data[src[1]]["phone"] = " ".join(find_phone(req.text))
+    data[src[1]]["inn"] = " ".join(find_inn(req.text))
+    data[src[1]]["ooo"] = " ".join(find_ooo(req.text))
+    data[src[1]]["individual"] = " ".join(find_individual(req.text))
+    data[src[1]]["ip"] = " ".join(find_ip(req.text))
+    data[src[1]]["domain"] = " ".join(find_domain(req.text))
+    good += 1
+
+print("-=-=-=-=-=-=")
+print(data)
+with open("test.txt", "w", encoding="UTF-8") as file:
+    file.write(str(data))
+print("-=-=-=-=-=-=")
+
+print("-=-=-=-=-=-=")
+print("good:", good)
+print("bad:", bad)
+print("check again:", check_again)
+print("-=-=-=-=-=-=")
 
 # test = "+79869466585 fedorov22134@gmail.com ИНН 012345678912 ООО ПАРАМ ПАРАМ ИП ПАРАМ ПАРАМ ПАРАМ ПАРААМ 25.255.25.1 aaaa.ru"
 
