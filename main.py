@@ -1,6 +1,7 @@
 import csv
 import requests
 import re 
+import threading
 
 from bs4 import BeautifulSoup
 
@@ -21,25 +22,37 @@ def get_src(html: str, url: str):
     return [http for data in split_comma for http in data.split(" ") if "http" in http and http not in (url, url[:-1]) if "http" in data and "://" in data]
 
 def find_email(html: str):
-    return re.findall(r"[a-zA-Z0-9.-]{1,1024}@[a-zA-Z0-9.-]{1,1024}", html)
+    return re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}(?=\s|$|>|<)", html)
 
 def find_phone(html: str):
-    return re.findall(r"\+[0-9]{9,15}", html)
+    return re.findall(r"\+[0-9]{9,15}(?=\s|$|>|<)", html) + re.findall(r"\+\d{1,3} \(\d{3}\) \d{3}-\d{2}-\d{2}", html) + re.findall(r"8 \(\d{3}\) \d{3}-\d{2}-\d{2}", html) + re.findall(r"8\d{10}", html)
 
 def find_inn(html: str):
-    return re.findall(r"ИНН [a-zA-Z0-9.-]{12}", html)
+    return re.findall(r"ИНН [a-zA-Z0-9.-]{12}(?=\s|$|>|<)", html)
 
 def find_ooo(html: str):
-    return re.findall(r"ООО [a-zA-Zа-яА-Я0-9.-]{1,100} [a-zA-Zа-яА-Я0-9.-]{1,100}", html)
+    return re.findall(r"ООО [a-zA-Zа-яА-Я0-9.-]{1,100} [a-zA-Zа-яА-Я0-9.-]{1,100}(?=\s|$|>|<)", html)
 
 def find_individual(html: str):
-    return re.findall(r"ИП [a-zA-Zа-яА-Я0-9.-]{1,50} [a-zA-Zа-яА-Я0-9.-]{1,50} [a-zA-Zа-яА-Я0-9.-]{1,50}", html)
+    return re.findall(r"ИП [a-zA-Zа-яА-Я0-9.-]{1,50} [a-zA-Zа-яА-Я0-9.-]{1,50} [a-zA-Zа-яА-Я0-9.-]{1,50}(?=\s|$|>|<)", html)
 
 def find_ip(html: str):
-    return re.findall(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", html)
+    return re.findall(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(?=\s|$|>|<)", html)
 
-def find_domain(html: str):
-    return re.findall(r"\ [a-zA-Zа-яА-Я0-9.-]{1,100}\.[a-zA-Zа-яА-Я]{1,3}", html)
+def find_urls(html: str, url: str):
+    soup = BeautifulSoup(html, "html.parser")
+    hrefs = [a.get("href") for a in soup.find_all("a", href=True)]
+    for idx in range(len(hrefs)):
+        if "http" not in hrefs[idx]:
+            hrefs[idx] = "http://" + url + hrefs[idx]
+    return hrefs
+
+
+# def find_domain(html: str):
+    # domains = re.findall(r"(?:\s|$|>|<)[a-zA-Zа-яА-Я0-9.-]{1,100}\.[a-zA-Zа-яА-Я]{1,3}(?=\s|$|>|<)", html)
+    # for domain in domains:
+        # if "src" in domain or 'js' in domain or "io" in domain:
+    # return 
 
 SHABLON = [
     """
@@ -56,6 +69,12 @@ SHABLON = [
     """,
     """
     lostdomain 
+    """,
+    """
+    <strong class="mh">.masterhost</strong>
+    """,
+    """
+    <p class="lead">This page is used to test the proper operation of the <a href="http://apache.org">Apache HTTP server</a> after it has been installed. If you can read this page it means that this site is working properly.
     """
 ]
 
@@ -79,58 +98,84 @@ DELETE = [
 #     except requests.exceptions.ConnectionError:
 #         print("exp")
 
+def parser(all_data: list):
+    global data, bad, good, check_again
+    for src in all_data:
+        print(src[1])
+        try:
+            req = requests.get("http://" + src[1], timeout=5)
+        except requests.exceptions.ConnectionError:
+            bad += 1
+            continue
+        except requests.exceptions.Timeout:
+            bad += 1
+            continue
+        except requests.exceptions.TooManyRedirects:
+            bad += 1
+            continue
+        
+        if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in DELETE]):
+            bad += 1
+            continue
+        
+        if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in SHABLON]):
+            check_again += 1
+            continue
 
-all_data = data_from_file("ihead_domains_1725961813_4457.csv")
-bad = good = check_again = 0
-data = {}
-for src in all_data:
-    print(src[1])
-    try:
-        req = requests.get("http://" + src[1], timeout=5)
-    except requests.exceptions.ConnectionError:
-        bad += 1
-        continue
-    except requests.exceptions.Timeout:
-        bad += 1
-        continue
-    except requests.exceptions.TooManyRedirects:
-        bad += 1
-        continue
+        data[src[1]] = {}
+        data[src[1]]["email"] = " ".join(find_email(req.text))
+        data[src[1]]["phone"] = " ".join(find_phone(req.text))
+        data[src[1]]["inn"] = " ".join(find_inn(req.text))
+        data[src[1]]["ooo"] = " ".join(find_ooo(req.text))
+        data[src[1]]["individual"] = " ".join(find_individual(req.text))
+        data[src[1]]["ip"] = " ".join(find_ip(req.text))
+        data[src[1]]["domain"] = " ".join(find_urls(req.text, req.url))
+        good += 1
+
+def split_file(nums: int, data: list):
+    start = 0
+    end = start + len(data) // nums
+    new_data = []
+    while start <= len(data):
+        if (start + len(data) // nums) >= len(data):
+            new_data.append(data[start:])
+            break
+        new_data.append(data[start:end])
+        start = end
+        end = start + len(data) // nums
+    return new_data
+
+# data = {}
+# bad = good = check_again = 0
+# filename = "ihead_domains_1725961813_4457.csv"
+# all_data = data_from_file(filename)
+
+# thrs = []
+# for num in range(16):
+#     thr = threading.Thread(target=parser, args=(split_file(16, all_data)[num], ))
+#     thr.start()
+#     thrs.append(thr)
     
-    if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in DELETE]):
-        bad += 1
-        continue
-    
-    if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in SHABLON]):
-        check_again += 1
-        continue
+# for thr in thrs:
+#     thr.join()
 
-    data[src[1]] = {}
-    data[src[1]]["email"] = " ".join(find_email(req.text))
-    data[src[1]]["phone"] = " ".join(find_phone(req.text))
-    data[src[1]]["inn"] = " ".join(find_inn(req.text))
-    data[src[1]]["ooo"] = " ".join(find_ooo(req.text))
-    data[src[1]]["individual"] = " ".join(find_individual(req.text))
-    data[src[1]]["ip"] = " ".join(find_ip(req.text))
-    data[src[1]]["domain"] = " ".join(find_domain(req.text))
-    good += 1
+# print("-=-=-=-=-=-=")
+# print(data)
+# with open("test.txt", "w", encoding="UTF-8") as file:
+#     file.write(str(data))
+# print("-=-=-=-=-=-=")
 
-print("-=-=-=-=-=-=")
-print(data)
-with open("test.txt", "w", encoding="UTF-8") as file:
-    file.write(str(data))
-print("-=-=-=-=-=-=")
+# print("-=-=-=-=-=-=")
+# print("good:", good)
+# print("bad:", bad)
+# print("check again:", check_again)
+# print("-=-=-=-=-=-=")
 
-print("-=-=-=-=-=-=")
-print("good:", good)
-print("bad:", bad)
-print("check again:", check_again)
-print("-=-=-=-=-=-=")
+req = requests.get("http://MOSTLINGSIBOWRARA.ru")
+with open('test1.txt', "w", encoding="UTF-8") as file:
+    file.write(req.text)
 
-# test = "+79869466585 fedorov22134@gmail.com ИНН 012345678912 ООО ПАРАМ ПАРАМ ИП ПАРАМ ПАРАМ ПАРАМ ПАРААМ 25.255.25.1 aaaa.ru"
-
-# site1 = all_data[1]
-# req = requests.get(url="http://"+site1)
+# test = "big@desktop +79869466585 fedorov22134@gmail.com ИНН 012345678912 ООО ПАРАМ ПАРАМ ИП ПАРАМ ПАРАМ ПАРАМ ПАРААМ 25.255.25.1 aaaa.ru"
 
 # print(find_email(test))
 # print(find_phone(test))
