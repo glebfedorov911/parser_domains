@@ -32,7 +32,7 @@ def find_inn(html: str):
     return re.findall(r"ИНН [a-zA-Z0-9.-]{12}(?=\s|$|>|<)", html)
 
 def find_ooo(html: str):
-    return re.findall(r"ООО [a-zA-Zа-яА-Я0-9.-]{1,100} [a-zA-Zа-яА-Я0-9.-]{1,100} [a-zA-Zа-яА-Я0-9.-]{1,100} [a-zA-Zа-яА-Я0-9.-]{1,100} [a-zA-Zа-яА-Я0-9.-]{1,100}(?=\s|$|>|<)", html)
+    return re.findall(r"ООО [a-zA-Zа-яА-Я0-9.-]{1,100} [a-zA-Zа-яА-Я0-9.-]{1,100} [a-zA-Zа-яА-Я0-9.-]{1,100}(?=\s|$|>|<)", html)
 
 def find_individual(html: str):
     return re.findall(r"ИП [a-zA-Zа-яА-Я0-9.-]{1,50} [a-zA-Zа-яА-Я0-9.-]{1,50} [a-zA-Zа-яА-Я0-9.-]{1,50}(?=\s|$|>|<)", html)
