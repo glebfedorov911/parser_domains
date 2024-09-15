@@ -2,6 +2,7 @@ import csv
 import requests
 import re 
 import threading
+import time
 
 from bs4 import BeautifulSoup
 
@@ -194,6 +195,7 @@ def split_file(nums: int, data: list):
         end = start + len(data) // nums
     return new_data
 
+t = time.perf_counter()
 data = {}
 total = 0
 bad = good = check_again = 0
@@ -224,6 +226,7 @@ print("good:", good)
 print("bad:", bad)
 print("check again:", check_again)
 print("-=-=-=-=-=-=")
+print(time.perf_counter()-t)
 
 # test = "big@desktop +79869466585 fedorov22134@gmail.com ИНН 012345678912 ООО ПАРАМ ПАРАМ ИП ПАРАМ ПАРАМ ПАРАМ ПАРААМ 25.255.25.1 aaaa.ru"
 
