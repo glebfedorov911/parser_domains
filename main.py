@@ -23,26 +23,42 @@ def find_email(html: str):
 
 def find_phone(html: str):
     pat1 = r"(?<=[\s><:])\+[0-9]{9,15}(?=\s|$|>|<)"
-    pat2 = r"(?<=[\s><:])\+\d{1,3} \(\d{3}\) \d{3}-\d{2}-\d{2}"
+    pat2 = r"(?<=[\s><:])\+\d{1,3} \d{3} \d{3}-\d{2}-\d{2}" 
     pat3 = r"(?<=[\s><:])8 \(\d{3}\) \d{3}-\d{2}-\d{2}"
     pat4 = r"(?<=[\s><:])8\d{10}"
-    return re.findall(pat1, html) + re.findall(pat2, html) + re.findall(pat3, html) + re.findall(pat4, html)
+    pat5 = r"\+7\s?[0-9\s‑]{10,}"
+    return [res.replace("\xa0", "") for res in (re.findall(pat1, html) + re.findall(pat2, html) + re.findall(pat3, html) + re.findall(pat4, html) + re.findall(pat5, html))]
 
 def find_inn(html: str):
-    return re.findall(r"ИНН [a-zA-Z0-9.-]{12}(?=\s|$|>|<)", html)
+    return re.findall(r"ИНН [a-zA-Z0-9.-«»]{10,12}(?=\s|$|>|<|,)", html)
 
 def find_ooo(html: str):
-    return re.findall(r"ООО [a-zA-Zа-яА-Я0-9.-]{1,100} [a-zA-Zа-яА-Я0-9.-]{1,100} [a-zA-Zа-яА-Я0-9.-]{1,100}(?=\s|$|>|<)", html)
+    clean_html = re.sub(r'<[^>]+>', ' ', html)
+
+    pat1 = r"ООО [a-zA-Zа-яА-Я0-9.-«»&;]{1,100}(?=\s|$|>|<)"
+    pat2 = r"ООО [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100}(?=\s|$|>|<|)"
+    pat3 = r"ООО [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100}(?=\s|$|>|<)"
+    pat4 = r"ООО [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100}(?=\s|$|>|<)"
+    pat5 = r"ООО [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100}(?=\s|$|>|<)"
+    
+    results = re.findall(pat1, clean_html) + re.findall(pat2, clean_html) + re.findall(pat3, clean_html) + re.findall(pat4, clean_html) + re.findall(pat5, clean_html)
+
+    unique_results = []
+    for result in sorted(results, key=len, reverse=True):
+        if not any(result in longer for longer in unique_results):
+            unique_results.append(result)
+    
+    return [res.replace("&laquo;", "").replace("&raquo;", "") for res in unique_results]
 
 def find_individual(html: str):
-    return re.findall(r"ИП [a-zA-Zа-яА-Я0-9.-]{1,50} [a-zA-Zа-яА-Я0-9.-]{1,50} [a-zA-Zа-яА-Я0-9.-]{1,50}(?=\s|$|>|<)", html)
+    return re.findall(r"ИП [a-zA-Zа-яА-Я0-9.-«»&;]{1,50} [a-zA-Zа-яА-Я0-9.-«»&;]{1,50} [a-zA-Zа-яА-Я0-9.-«»&;]{1,50}(?=\s|$|>|<)", html)
 
 def find_urls(html: str, url: str):
     soup = BeautifulSoup(html, "html.parser")
     hrefs = [a.get("href") for a in soup.find_all("a", href=True)]
     final_hrefs = []
     for idx in range(len(hrefs)):
-        if any([True if exp in hrefs[idx] else False for exp in ("javascript", "js", "src", "io", "png", "jpg", "svg", "webp")]):
+        if any([True if exp in hrefs[idx] else False for exp in ("javascript", "js", "src", "io", "png", "jpg", "svg", "webp", "html")]):
             continue
         elif not "http" in hrefs[idx]:
             if hrefs[idx] != '':
@@ -53,7 +69,12 @@ def find_urls(html: str, url: str):
             else:
                 final_hrefs.append(url + hrefs[idx])
         else:
-            final_hrefs.append(url)
+            final_hrefs.append(hrefs[idx])
+
+        if hrefs[idx][:-1].count('/') >= 4:
+            if hrefs[idx] in final_hrefs:
+                final_hrefs.remove(hrefs[idx])
+
     return list(set(final_hrefs))
 
 
@@ -107,6 +128,9 @@ DELETE = [
                 <div class="octo">
                 <img src="https://cp.beget.com/img/octo/octo_error.png">
             </div>
+    """,
+    """
+    <td style="vertical-align: middle; text-align: center;"><a href="https://tilda.cc"><img src="https://tilda.ws/img/logo404.png" border="0" alt="Tilda"></a><br><br><br><br><b>Domain has been assigned.</b><br>Please go to the site settings and put the domain name in the Domain tab.<br><br></td>
     """
 ]
 # print(str(DELETE[0].replace("   ", "").replace(" ", "")).strip() == str(str(req.text).replace("   ", "").replace(" ", "")).strip())
@@ -128,22 +152,20 @@ def unique(data: list, src: list):
     del data[src[1]]["domain"]
 
 def parser(all_data: list):
-    global data, bad, good, check_again, total
+    global data, bad, good, check_again, badurl
+
     for src in all_data:
         print("not under", src[1])
         try:
             req = requests.get("http://" + src[1], timeout=5)
-        except requests.exceptions.ConnectionError:
-            bad += 1
-            continue
-        except requests.exceptions.Timeout:
-            bad += 1
-            continue
-        except requests.exceptions.TooManyRedirects:
+        except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
+            requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL):
+            # badurl.append("http://" + src[1])
             bad += 1
             continue
         
         if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in DELETE]):
+            # badurl.append("http://" + src[1])
             bad += 1
             continue
         
@@ -161,26 +183,17 @@ def parser(all_data: list):
         good += 1
         for under_src in data[src[1]]["domain"]:
             try: #переписать в потоки
-                print("under", under_src)
+                print("under11", under_src)
                 under_req = requests.get(under_src, timeout=3)
                 data[src[1]]["email"] += find_email(under_req.text)
                 data[src[1]]["phone"] += find_phone(under_req.text)
                 data[src[1]]["inn"] += find_inn(under_req.text)
                 data[src[1]]["ooo"] += find_ooo(under_req.text)
                 data[src[1]]["individual"] += find_individual(under_req.text)
-            except requests.exceptions.MissingSchema:
-                continue
-            except requests.exceptions.ConnectionError:
-                continue
-            except requests.exceptions.Timeout:
-                continue
-            except requests.exceptions.TooManyRedirects:
-                continue
-            except requests.exceptions.InvalidSchema:
+            except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
+            requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL):
                 continue
         unique(data, src)
-        total += 1
-        print(total, "/ 2361")
 
 def split_file(nums: int, data: list):
     start = 0
@@ -197,10 +210,10 @@ def split_file(nums: int, data: list):
 
 t = time.perf_counter()
 data = {}
-total = 0
 bad = good = check_again = 0
 filename = "ihead_domains_1725961813_4457.csv"
-all_data = data_from_file(filename)
+all_data = data_from_file(filename)[:555]
+badurl = []
 
 # with open("test1.txt", "w", encoding="UTF-8") as file:
 #     req = requests.get("http://GIGASTOR.ru")
@@ -227,7 +240,7 @@ print("bad:", bad)
 print("check again:", check_again)
 print("-=-=-=-=-=-=")
 print(time.perf_counter()-t)
-
+# print(badurl)
 # test = "big@desktop +79869466585 fedorov22134@gmail.com ИНН 012345678912 ООО ПАРАМ ПАРАМ ИП ПАРАМ ПАРАМ ПАРАМ ПАРААМ 25.255.25.1 aaaa.ru"
 
 # print(find_email(test))
@@ -237,3 +250,4 @@ print(time.perf_counter()-t)
 # print(find_individual(test))
 # print(find_ip(test))
 # print(find_domain(test))
+
