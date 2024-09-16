@@ -11,8 +11,6 @@ from bs4 import BeautifulSoup
 #если сайт пустышка/стандартный - перепроверка
 #если бан от служб рф - удаление
 
-#переделать домены
-
 def data_from_file(filename: str) -> list:
     with open(filename, "r", newline="") as file:
         reader = csv.reader(file, delimiter=' ', quotechar="|")
@@ -78,13 +76,6 @@ def find_urls(html: str, url: str):
                 final_hrefs.remove(hrefs[idx])
 
     return list(set(final_hrefs))
-
-
-# def find_domain(html: str):
-    # domains = re.findall(r"(?:\s|$|>|<)[a-zA-Zа-яА-Я0-9.-]{1,100}\.[a-zA-Zа-яА-Я]{1,3}(?=\s|$|>|<)", html)
-    # for domain in domains:
-        # if "src" in domain or 'js' in domain or "io" in domain:
-    # return 
 
 SHABLON = [
     """
@@ -152,15 +143,6 @@ DELETE = [
     <td style="vertical-align: middle; text-align: center;"><a href="https://tilda.cc"><img src="https://tilda.ws/img/logo404.png" border="0" alt="Tilda"></a><br><br><br><br><b>Domain has been assigned.</b><br>Please go to the site settings and put the domain name in the Domain tab.<br><br></td>
     """
 ]
-# print(str(DELETE[0].replace("   ", "").replace(" ", "")).strip() == str(str(req.text).replace("   ", "").replace(" ", "")).strip())
-
-# dummy-alert dummy-alert--margin-negative dummy-alert--success
-# 24AUTOEXPERT24.ru
-# for i in ("http://akolokoltsev.ru/", ):
-#     try:
-#         req = requests.get(i)
-#     except requests.exceptions.ConnectionError:
-#         print("exp")
 
 def unique(data: list, src: list):
     data[src[1]]["email"] = list(set(data[src[1]]["email"]))
@@ -179,12 +161,10 @@ def parser(all_data: list):
             req = requests.get("http://" + src[1], timeout=5)
         except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
             requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL):
-            # badurl.append("http://" + src[1])
             bad += 1
             continue
         
         if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in DELETE]):
-            # badurl.append("http://" + src[1])
             bad += 1
             continue
         
@@ -201,7 +181,7 @@ def parser(all_data: list):
         data[src[1]]["domain"] = find_urls(req.text, req.url)
         good += 1
         for under_src in data[src[1]]["domain"]:
-            try: #переписать в потоки
+            try:
                 print("under11", under_src)
                 under_req = requests.get(under_src, timeout=3)
                 data[src[1]]["email"] += find_email(under_req.text)
@@ -234,10 +214,6 @@ filename = "ihead_domains_1725961813_4457.csv"
 all_data = data_from_file(filename)[:555]
 badurl = []
 
-# with open("test1.txt", "w", encoding="UTF-8") as file:
-#     req = requests.get("http://GIGASTOR.ru")
-#     file.write(str(req.text))
-
 thrs = []
 for num in range(16):
     thr = threading.Thread(target=parser, args=(split_file(16, all_data)[num], ))
@@ -259,14 +235,3 @@ print("bad:", bad)
 print("check again:", check_again)
 print("-=-=-=-=-=-=")
 print(time.perf_counter()-t)
-# print(badurl)
-# test = "big@desktop +79869466585 fedorov22134@gmail.com ИНН 012345678912 ООО ПАРАМ ПАРАМ ИП ПАРАМ ПАРАМ ПАРАМ ПАРААМ 25.255.25.1 aaaa.ru"
-
-# print(find_email(test))
-# print(find_phone(test))
-# print(find_inn(test))
-# print(find_ooo(test))
-# print(find_individual(test))
-# print(find_ip(test))
-# print(find_domain(test))
-
