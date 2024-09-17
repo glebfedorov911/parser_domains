@@ -46,7 +46,7 @@ def find_ooo(html: str):
         if not any(result in longer for longer in unique_results):
             unique_results.append(result)
     
-    return [res.replace("&laquo;", "").replace("&raquo;", "") for res in unique_results]
+    return [res.replace("&laquo;", "").replace("&raquo;", "")[:res.find("»")+1] if res.find("»") != -1 else res.replace("&laquo;", "").replace("&raquo;", "") for res in unique_results]
 
 def find_individual(html: str):
     clean_html = re.sub(r'<[^>]+>', ' ', html)
@@ -128,7 +128,11 @@ SHABLON = [
     <path d="M4.08093 10.5398H0.0410156V28.9171C0.0410156 30.6485 1.44362 32.0546 3.17851 32.0546H25.4592V28.0147H4.08093V10.5398Z" fill="#3755FA"></path>
   </g>
     """,
-    "ООО РЕГ.РУ"
+    """
+    <span class="b-parking-shopfront__header-text b-parking-shopfront__header-text_mode_additional tooltip" title="по&nbsp;данным StatOnline.ru, занимает первое место по&nbsp;количеству зарегистрированных доменов и&nbsp;размещённых сайтов в&nbsp;национальных зонах .RU и .РФ.">
+                        Хостинг-провайдер и регистратор доменных имён №1 в России
+                    </span>
+    """,
 ]
 
 DELETE = [
