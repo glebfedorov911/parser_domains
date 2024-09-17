@@ -2,7 +2,7 @@ from django.db import models
 
 
 class DateModel(models.Model):
-    date = models.CharField(max_length=21)
+    date = models.CharField(max_length=21, null=False, blank=True)
 
 class AgainShablonModel(models.Model):
     code = models.TextField(null=False)

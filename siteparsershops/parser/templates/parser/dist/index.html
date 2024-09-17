@@ -1,9 +1,15 @@
 {% extends "parser/base.html" %}
 
 {% block content %}
+    <form method="post">
+        {% csrf_token %}
+        {{form_date.as_p}}
+        <button type="submit">Ввести дату</button>
+    </form>
+    <h1>Дата: {{date.date}}</h1>
     <form method="post", enctype="multipart/form-data">
         {% csrf_token %}
-        {{form.as_p}}
+        {{form_file.as_p}}
         <button type="submit">Загрузить файл</button>
     </form>
 {% endblock %}
