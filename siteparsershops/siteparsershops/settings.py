@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-ah8w(xwy5dtb6con&2_*-g)a!%*_1tj$ksimu45*)254jn47h2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'parser.apps.ParserConfig',
+    "channels"
 ]
 
 MIDDLEWARE = [
@@ -70,7 +71,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'siteparsershops.wsgi.application'
+# WSGI_APPLICATION = 'siteparsershops.wsgi.application'
+ASGI_APPLICATION = 'siteparsershops.asgi.application'
 
 
 # Database
@@ -125,7 +127,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static")
+    os.path.join(BASE_DIR, "static"),
 ]
 
 # Default primary key field type

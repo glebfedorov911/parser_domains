@@ -10,6 +10,8 @@ from .models import FileModel, DateModel
 import re
 
 
+#uvicorn siteparsershops.asgi:application --host 127.0.0.1 --port 8000
+
 class ParserView(TemplateView):
     template_name = "parser/index.html"
     form_file = FileForm

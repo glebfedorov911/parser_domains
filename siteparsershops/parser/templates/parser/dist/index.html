@@ -12,4 +12,24 @@
         {{form_file.as_p}}
         <button type="submit">Загрузить файл</button>
     </form>
+
+    <div id="forws"></div>
+
+    <script>
+        const ws = new WebSocket(`ws://${window.location.host}/ws/parser/`);
+
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            document.getElementById("forws").innerText = data.msg;
+        };
+
+        ws.onopen = function(event) {
+            ws.send(JSON.stringify({"msg": "Hello from client!"}));
+        };
+
+        ws.onerror = function(error) {
+            console.error('WebSocket Error:', error);
+        };
+    </script>
+
 {% endblock %}
