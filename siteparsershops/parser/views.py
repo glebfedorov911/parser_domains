@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 from django.core.cache import cache
 
 from .forms import FileForm, DateForm
-from .models import FileModel, DateModel
+from .models import FileModel, DateModel, StatisticsModel, ShowDataModel, AgainDataModel
 from .parser import parser, data_from_file, split_file
 from siteparsershops.settings import MEDIA_ROOT
 
@@ -24,31 +24,67 @@ class ParserView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        lastdate = lastdate = DateModel.objects.all().order_by("-id")
+        lastdate = DateModel.objects.all().order_by("-id")
+        lastfile = FileModel.objects.all().order_by("-id")
 
         context["title"] = "Парсер доменов"
         context["form_file"] = self.form_file
         context["form_date"] = self.form_date
         context["date"] = lastdate[0] if len(lastdate) != 0 else ""
+        if len(lastfile) != 0:
+            context["showdata"] = ShowDataModel.objects.filter(file_id=lastfile[0].pk)
         return context
 
-    def get(self, request):
-        if self.request.GET.get('start') == "True":
-            files = FileModel.objects.all().order_by("-id")
-            if len(files) == 0:
-                raise HttpResponse("<h1>Файл не загружен</h1> <br> <a href=''>Вернуться на главную страницу</a>")
-            # try:
-            all_data = data_from_file(f"{MEDIA_ROOT}/{files[0].file}")
-            cache.set("count_data", len(all_data))
-            all_data = split_file(16, all_data)
-            for num in range(len(all_data)):
-                thr = multiprocessing.Process(target=parser, args=(all_data[num], ))
-                thr.start()
-            cache.set("start_parser", True)
+    def start_parser(self, all_data):
+        shared_data = multiprocessing.Manager().list([{} for _ in range(len(all_data))])
+        processes = []
+        for num in range(len(all_data)):
+            process = multiprocessing.Process(target=parser, args=(all_data[num], shared_data, num))
+            process.start()
+            processes.append(process)
+        for process in processes:
+            process.join()
 
-            # except:
-            #     HttpResponse("<h1>Ошибка файла</h1> <br> <a href=''>Вернуться на главную страницу</a>")
+        return list(shared_data)
+
+    def get(self, request):
+        if self.request.GET.get('start') == "True" or self.request.GET.get('again') == "True":
+            # try:
+            if self.request.GET.get('again') == "True":
+                files = AgainDataModel.objects.all()
+                all_data = [eval(file.domain) for file in files]
+            else:
+                files = FileModel.objects.all().order_by("-id")
+                all_data = data_from_file(f"{MEDIA_ROOT}/{files[0].file}")
+            
+            all_data = split_file(16, all_data[:555])
+            
+            res = self.start_parser(all_data)
+            good = bad = check_again = 0
+            again_domain = []
+            data = []
+
+            if self.request.GET.get('again') == "True":
+                files = AgainDataModel.objects.all().delete()
+                files = FileModel.objects.all().order_by("-id")
+
+            for r in res:
+                again_domain += r["again_domain"]
+                good += r["good"]
+                check_again += r["check_again"]
+                bad += r["bad"]
+                data += [(i, r["data"][i]) for i in r["data"]]
+
+            StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, file=files[0]).save()
+            for row in data:
+                ShowDataModel.objects.create(domain=row[0], phone=row[1]["phone"], email=row[1]["email"], inn=row[1]["inn"],
+                                            ooo=row[1]["ooo"], ip=row[1]["individual"], file=files[0]).save()
+            for row in again_domain:
+                AgainDataModel.objects.create(domain=row)
+            
             return redirect(reverse("parser"))
+            # except:
+            #     return HttpResponse("<h1>Файл не загружен либо загружен неправильно</h1> <br> <a href=''>Вернуться на главную страницу</a>")
         return render(request, self.template_name, context=self.get_context_data())
 
     def post(self, request, *args, **kwargs):

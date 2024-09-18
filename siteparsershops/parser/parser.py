@@ -160,28 +160,30 @@ def unique(data: list, src: list):
     data[src[1]]["individual"] = list(set(data[src[1]]["individual"]))
     del data[src[1]]["domain"]
 
-def parser(all_data: list):
-    global data, bad, good, check_again, again_domain, total
-
+def parser(all_data: list, shared, index):
+    bad = 0
+    good = 0
+    check_again = 0
+    again_domain = []
+    data = {}
+    
     for src in all_data:
         print("not under", src[1])
-        total += 1
-        cache.set("total", total)
         try:
             req = requests.get("http://" + src[1], timeout=5)
         except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
             requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL) as e:
-            print(e, src)
+            # print(e, src)
             bad += 1
             continue
         
         if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in DELETE]):
-            print("ОШИБКА", src)
+            # print("ОШИБКА", src)
             bad += 1
             continue
         
         if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in SHABLON]):
-            print("ОШИБКА", src)
+            # print("ОШИБКА", src)
             again_domain.append(src)
             check_again += 1
             continue
@@ -205,9 +207,10 @@ def parser(all_data: list):
                 data[src[1]]["individual"] += find_individual(under_req.text)
             except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
             requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL) as e:
-                print("ОШИБКА", src, e)
+                # print("ОШИБКА", src, e)
                 continue
         unique(data, src)
+    shared[index] = {"data": data, "good": good, "bad": bad, "check_again": check_again, "again_domain": again_domain}
 
 def split_file(nums: int, data: list):
     start = 0
@@ -227,12 +230,5 @@ def split_file(nums: int, data: list):
 # cache.set("check_again", 0)
 # cache.set("again_domain", [])
 # cache.set("data", {})
-# cache.set("total", 0)
-total = 0
-bad = 0
-good = 0
-check_again = 0
-again_domain = []
-data = {}
 cache.set("count_data", 1)
 cache.set("start_parser", False)

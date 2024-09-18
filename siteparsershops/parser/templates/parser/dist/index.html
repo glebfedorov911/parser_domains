@@ -1,55 +1,139 @@
 {% extends "parser/base.html" %}
 
 {% block content %}
-    <form method="post">
-        {% csrf_token %}
-        {{form_date.as_p}}
-        <button type="submit">Ввести дату</button>
-    </form>
-    <h1>Дата: {{date.date}}</h1>
-    <form method="post", enctype="multipart/form-data">
-        {% csrf_token %}
-        {{form_file.as_p}}
-        <button type="submit">Загрузить файл</button>
-    </form>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <h2 class="mb-3 font-weight-bold">Введите дату</h2>
+                <form method="post" class="mb-4">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        {{ form_date.as_p }}
+                    </div>
+                    <button type="submit" class="btn btn-custom">Ввести дату</button>
+                </form>
 
-    <form action="{% url 'parser' %}" id="startparser" method="get">
-        {% csrf_token %}
-        <input type="hidden" name="start" id="start-param">
-        <button type="submit" onclick="setStartParam()">Запустить парсер</button>
-    </form>
+                <h3 class="font-weight-bold">Дата: {{ date.date }}</h3>
+            </div>
+            <div class="col-md-6">
+                <h2 class="mb-3 font-weight-bold">Загрузить файл</h2>
+                <form method="post" enctype="multipart/form-data" class="mb-4">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        {{ form_file.as_p }}
+                    </div>
+                    <button type="submit" class="btn btn-custom">Загрузить файл</button>
+                </form>
+            </div>
+        </div>
 
-    <!-- <form action="", onsubmit="sendMessage(event)">
-        {% csrf_token %}
-        <input type="text" id="msg">
-        <button type="submit">отправить</button>
-    </form> -->
+        <div class="row">
+            <div class="col-md-6">
+                <h2 class="mb-3 font-weight-bold">Запуск парсера</h2>
+                <form action="{% url 'parser' %}" id="startparser" method="get" class="mb-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="start" id="start-param">
+                    <div id="parser" hidden>Парсер запущен</div>
+                    <button type="submit" class="btn btn-custom btn-lg" onclick="setStartParam()">Запустить парсер</button>
+                </form>
+            </div>
 
-    <div id="forws"></div>
+            <div class="col-md-6">
+                <h2 class="mb-3 font-weight-bold">Запуск проверки</h2>
+                <form action="{% url 'parser' %}" id="againparser" method="get">
+                    {% csrf_token %}
+                    <input type="hidden" name="again" id="again-param">
+                    <div id="parser" hidden>Парсер запущен</div>
+                    <button type="submit" class="btn btn-custom btn-lg" onclick="setAgainParam()">Запустить проверку</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <h2 class="font-weight-bold">Результаты:</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Домен</th>
+                            <th>Телефон</th>
+                            <th>Email</th>
+                            <th>ИНН</th>
+                            <th>ООО</th>
+                            <th>ИП</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in showdata %}
+                            <tr>
+                                <td>{{ data.domain }}</td>
+                                <td>{{ data.phone }}</td>
+                                <td>{{ data.email }}</td>
+                                <td>{{ data.inn }}</td>
+                                <td>{{ data.ooo }}</td>
+                                <td>{{ data.ip }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const ws = new WebSocket(`ws://${window.location.host}/ws/parser/`);
-
-        ws.onmessage = function(event) {
-            let data = JSON.parse(event.data)
-            document.querySelector("#forws").innerHTML = data.msg;
-        }
-        
         function setStartParam() {
             document.getElementById("start-param").value = "True";
+            document.getElementById("parser").hidden = false;
         }
 
-        // ws.onmessage = function(event) {
-        //     let form = document.querySelector("#forws")
-        //     form.innerHTML = event.data
-        // }
-        // function sendMessage(event) {
-        //     let input = document.querySelector("#msg")
-        //     data = input.value
-        //     ws.send(JSON.stringify({"msg": data}))
-        //     input.value = ""
-        //     event.preventDefault()
-        // }
+        function setAgainParam() {
+            document.getElementById("again-param").value = "True";
+            document.getElementById("parser").hidden = false;
+        }
     </script>
 
+{% endblock %}
+
+{% block styles %}
+<style>
+    .btn-custom {
+        background-color: #5bc0de;
+        border-color: #46b8da;
+        color: white;
+        font-size: 1.2rem;
+        padding: 10px 20px;
+        border-radius: 30px;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-custom:hover {
+        background-color: #31b0d5;
+        box-shadow: 0px 4px 15px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn-lg {
+        font-size: 1.4rem;
+        padding: 15px 30px;
+    }
+
+    body {
+        font-family: 'Roboto', sans-serif;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    h2, h3 {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 700;
+        color: #333;
+    }
+
+    table {
+        font-size: 1.1rem;
+    }
+
+    th, td {
+        padding: 10px 15px;
+    }
+</style>
 {% endblock %}

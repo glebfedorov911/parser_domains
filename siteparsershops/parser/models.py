@@ -17,7 +17,7 @@ class StatisticsModel(models.Model):
     good = models.IntegerField(null=False)
     bad = models.IntegerField(null=False)
     check_again = models.IntegerField(null=False)
-    file = models.OneToOneField(FileModel, null=True, on_delete=models.SET_NULL)
+    file = models.ForeignKey(FileModel, null=True, unique=False, on_delete=models.SET_NULL)
 
 class ShowDataModel(models.Model):
     domain = models.TextField(null=False)
@@ -26,7 +26,7 @@ class ShowDataModel(models.Model):
     inn = models.CharField(max_length=15, null=True)
     ooo = models.TextField(null=True)
     ip = models.TextField(null=True)
-    file = models.OneToOneField(FileModel, null=True, on_delete=models.SET_NULL)
+    file = models.ForeignKey(FileModel, null=True, unique=False, on_delete=models.SET_NULL)
 
 class AgainDataModel(models.Model):
     domain = models.TextField(null=False)
