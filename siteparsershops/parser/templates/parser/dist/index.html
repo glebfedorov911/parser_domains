@@ -1,8 +1,8 @@
 {% extends "parser/base.html" %}
 
 {% block content %}
-    <div class="container mt-5">
-        <div class="row">
+    <div class="container-fluid mt-5 p-0">
+        <div class="row no-gutters"> 
             <div class="col-md-6">
                 <h2 class="mb-3 font-weight-bold">Введите дату</h2>
                 <form method="post" class="mb-4">
@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        <div class="row">
+        <div class="row no-gutters">
             <div class="col-md-6">
                 <h2 class="mb-3 font-weight-bold">Запуск парсера</h2>
                 <form action="{% url 'parser' %}" id="startparser" method="get" class="mb-4">
@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <div class="row mt-4">
+        <div class="row no-gutters mt-4">
             <div class="col-12">
                 <h2 class="font-weight-bold">Результаты:</h2>
                 <table class="table table-striped">
@@ -134,6 +134,21 @@
 
     th, td {
         padding: 10px 15px;
+    }
+
+    .container-fluid {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .row.no-gutters {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .col-md-6, .col-12 {
+        padding-left: 0;
+        padding-right: 0;
     }
 </style>
 {% endblock %}
