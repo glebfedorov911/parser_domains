@@ -32,7 +32,7 @@ class MyWSConsumer(AsyncWebsocketConsumer):
             # self.message += 1
             if cache.get("start_parser"):
                 print("total", cache.get("total"), cache.get("count_data"))
-                percent = int(cache.get("total") / cache.get("count_data") * 100) 
+                percent = int(cache.get("total", 0) / cache.get("count_data", 1) * 100) 
                 await self.send(text_data=json.dumps({"msg": percent}))
             else:
                 await self.send(text_data=json.dumps({"msg": 0}))

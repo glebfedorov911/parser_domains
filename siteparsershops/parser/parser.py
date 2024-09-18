@@ -164,24 +164,24 @@ def parser(all_data: list):
     global data, bad, good, check_again, again_domain, total
 
     for src in all_data:
-        # print("not under", src[1])
+        print("not under", src[1])
         total += 1
         cache.set("total", total)
         try:
             req = requests.get("http://" + src[1], timeout=5)
         except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
             requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL) as e:
-            # print(e, src)
+            print(e, src)
             bad += 1
             continue
         
         if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in DELETE]):
-            # print("ОШИБКА", src)
+            print("ОШИБКА", src)
             bad += 1
             continue
         
         if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in SHABLON]):
-            # print("ОШИБКА", src)
+            print("ОШИБКА", src)
             again_domain.append(src)
             check_again += 1
             continue
@@ -196,7 +196,7 @@ def parser(all_data: list):
         good += 1
         for under_src in data[src[1]]["domain"]:
             try:
-                # print("under11", under_src)
+                print("under11", under_src)
                 under_req = requests.get(under_src, timeout=3)
                 data[src[1]]["email"] += find_email(under_req.text)
                 data[src[1]]["phone"] += find_phone(under_req.text)
@@ -205,7 +205,7 @@ def parser(all_data: list):
                 data[src[1]]["individual"] += find_individual(under_req.text)
             except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
             requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL) as e:
-                # print("ОШИБКА", src, e)
+                print("ОШИБКА", src, e)
                 continue
         unique(data, src)
 
