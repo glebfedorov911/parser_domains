@@ -3,11 +3,16 @@ from django.urls import reverse
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.views.generic import TemplateView
+from django.core.cache import cache
 
 from .forms import FileForm, DateForm
 from .models import FileModel, DateModel
+from .parser import parser, data_from_file, split_file
+from siteparsershops.settings import MEDIA_ROOT
 
 import re
+import threading
+import multiprocessing
 
 
 #uvicorn siteparsershops.asgi:application --host 127.0.0.1 --port 8000
@@ -26,6 +31,25 @@ class ParserView(TemplateView):
         context["form_date"] = self.form_date
         context["date"] = lastdate[0] if len(lastdate) != 0 else ""
         return context
+
+    def get(self, request):
+        if self.request.GET.get('start') == "True":
+            files = FileModel.objects.all().order_by("-id")
+            if len(files) == 0:
+                raise HttpResponse("<h1>Файл не загружен</h1> <br> <a href=''>Вернуться на главную страницу</a>")
+            # try:
+            all_data = data_from_file(f"{MEDIA_ROOT}/{files[0].file}")
+            cache.set("count_data", len(all_data))
+            all_data = split_file(16, all_data)
+            for num in range(len(all_data)):
+                thr = multiprocessing.Process(target=parser, args=(all_data[num], ))
+                thr.start()
+            cache.set("start_parser", True)
+
+            # except:
+            #     HttpResponse("<h1>Ошибка файла</h1> <br> <a href=''>Вернуться на главную страницу</a>")
+            return redirect(reverse("parser"))
+        return render(request, self.template_name, context=self.get_context_data())
 
     def post(self, request, *args, **kwargs):
         if not self.request.FILES.get("file", None) is None:

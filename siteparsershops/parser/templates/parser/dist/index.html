@@ -13,23 +13,43 @@
         <button type="submit">Загрузить файл</button>
     </form>
 
+    <form action="{% url 'parser' %}" id="startparser" method="get">
+        {% csrf_token %}
+        <input type="hidden" name="start" id="start-param">
+        <button type="submit" onclick="setStartParam()">Запустить парсер</button>
+    </form>
+
+    <!-- <form action="", onsubmit="sendMessage(event)">
+        {% csrf_token %}
+        <input type="text" id="msg">
+        <button type="submit">отправить</button>
+    </form> -->
+
     <div id="forws"></div>
 
     <script>
         const ws = new WebSocket(`ws://${window.location.host}/ws/parser/`);
 
         ws.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            document.getElementById("forws").innerText = data.msg;
-        };
+            let data = JSON.parse(event.data)
+            document.querySelector("#forws").innerHTML = data.msg;
+        }
+        
+        function setStartParam() {
+            document.getElementById("start-param").value = "True";
+        }
 
-        ws.onopen = function(event) {
-            ws.send(JSON.stringify({"msg": "Hello from client!"}));
-        };
-
-        ws.onerror = function(error) {
-            console.error('WebSocket Error:', error);
-        };
+        // ws.onmessage = function(event) {
+        //     let form = document.querySelector("#forws")
+        //     form.innerHTML = event.data
+        // }
+        // function sendMessage(event) {
+        //     let input = document.querySelector("#msg")
+        //     data = input.value
+        //     ws.send(JSON.stringify({"msg": data}))
+        //     input.value = ""
+        //     event.preventDefault()
+        // }
     </script>
 
 {% endblock %}

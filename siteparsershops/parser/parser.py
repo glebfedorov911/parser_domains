@@ -6,10 +6,13 @@ import time
 
 from bs4 import BeautifulSoup
 
+from django.core.cache import cache
 
 #если есть данные и/или сайт не пустышка - успешно
 #если сайт пустышка/стандартный - перепроверка
 #если бан от служб рф - удаление
+
+message = 1
 
 def data_from_file(filename: str) -> list:
     with open(filename, "r", newline="") as file:
@@ -158,22 +161,28 @@ def unique(data: list, src: list):
     del data[src[1]]["domain"]
 
 def parser(all_data: list):
-    global data, bad, good, check_again, badurl
+    global data, bad, good, check_again, again_domain, total
 
     for src in all_data:
-        print("not under", src[1])
+        # print("not under", src[1])
+        total += 1
+        cache.set("total", total)
         try:
             req = requests.get("http://" + src[1], timeout=5)
         except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
-            requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL):
+            requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL) as e:
+            # print(e, src)
             bad += 1
             continue
         
         if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in DELETE]):
+            # print("ОШИБКА", src)
             bad += 1
             continue
         
         if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in SHABLON]):
+            # print("ОШИБКА", src)
+            again_domain.append(src)
             check_again += 1
             continue
 
@@ -187,7 +196,7 @@ def parser(all_data: list):
         good += 1
         for under_src in data[src[1]]["domain"]:
             try:
-                print("under11", under_src)
+                # print("under11", under_src)
                 under_req = requests.get(under_src, timeout=3)
                 data[src[1]]["email"] += find_email(under_req.text)
                 data[src[1]]["phone"] += find_phone(under_req.text)
@@ -195,7 +204,8 @@ def parser(all_data: list):
                 data[src[1]]["ooo"] += find_ooo(under_req.text)
                 data[src[1]]["individual"] += find_individual(under_req.text)
             except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
-            requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL):
+            requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL) as e:
+                # print("ОШИБКА", src, e)
                 continue
         unique(data, src)
 
@@ -212,31 +222,17 @@ def split_file(nums: int, data: list):
         end = start + len(data) // nums
     return new_data
 
-t = time.perf_counter()
+# cache.set("bad", 0)
+# cache.set("good", 0)
+# cache.set("check_again", 0)
+# cache.set("again_domain", [])
+# cache.set("data", {})
+# cache.set("total", 0)
+total = 0
+bad = 0
+good = 0
+check_again = 0
+again_domain = []
 data = {}
-bad = good = check_again = 0
-filename = "ihead_domains_1725961813_4457.csv"
-all_data = data_from_file(filename)[:555]
-badurl = []
-
-thrs = []
-for num in range(16):
-    thr = threading.Thread(target=parser, args=(split_file(16, all_data)[num], ))
-    thr.start()
-    thrs.append(thr)
-    
-for thr in thrs:
-    thr.join()
-
-print("-=-=-=-=-=-=")
-print(data)
-with open("test.txt", "w", encoding="UTF-8") as file:
-    file.write(str(data))
-print("-=-=-=-=-=-=")
-
-print("-=-=-=-=-=-=")
-print("good:", good)
-print("bad:", bad)
-print("check again:", check_again)
-print("-=-=-=-=-=-=")
-print(time.perf_counter()-t)
+cache.set("count_data", 1)
+cache.set("start_parser", False)
