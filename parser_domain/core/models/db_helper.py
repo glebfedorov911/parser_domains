@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_scop
 
 from asyncio import current_task
 
-from parser_domain.core.config import settings
+from core.config import settings
 
 
 class DataBaseHelper:
