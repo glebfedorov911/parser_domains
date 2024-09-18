@@ -1,6 +1,3 @@
-# class DateModel(models.Model):
-#     date = models.CharField(max_length=21, null=False, blank=True)
-
 from sqlalchemy.orm import Mapped, mapped_column, declared_attr, DeclarativeBase, relationship
 from sqlalchemy import String, ForeignKey
 
