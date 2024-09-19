@@ -1,23 +1,22 @@
 {% extends "parser/base.html" %}
 
 {% block content %}
-    <div class="container-fluid mt-5 p-0">
+    <div class="container-fluid mt-5">
         <div class="row no-gutters"> 
             <div class="col-md-6">
                 <h2 class="mb-3 font-weight-bold">Введите дату</h2>
-                <form method="post" class="mb-4">
+                <form method="post" class="mb-4 shadow p-4 bg-light rounded">
                     {% csrf_token %}
                     <div class="form-group">
                         {{ form_date.as_p }}
                     </div>
                     <button type="submit" class="btn btn-custom">Ввести дату</button>
                 </form>
-
                 <h3 class="font-weight-bold">Дата: {{ date.date }}</h3>
             </div>
             <div class="col-md-6">
                 <h2 class="mb-3 font-weight-bold">Загрузить файл</h2>
-                <form method="post" enctype="multipart/form-data" class="mb-4">
+                <form method="post" enctype="multipart/form-data" class="mb-4 shadow p-4 bg-light rounded">
                     {% csrf_token %}
                     <div class="form-group">
                         {{ form_file.as_p }}
@@ -30,7 +29,7 @@
         <div class="row no-gutters">
             <div class="col-md-6">
                 <h2 class="mb-3 font-weight-bold">Запуск парсера</h2>
-                <form action="{% url 'parser' %}" id="startparser" method="get" class="mb-4">
+                <form action="{% url 'parser' %}" id="startparser" method="get" class="mb-4 shadow p-4 bg-light rounded">
                     {% csrf_token %}
                     <input type="hidden" name="start" id="start-param">
                     <div id="parser" hidden>Парсер запущен</div>
@@ -40,15 +39,15 @@
 
             <div class="col-md-6">
                 <h2 class="mb-3 font-weight-bold">Запуск проверки</h2>
-                <form action="{% url 'parser' %}" id="againparser" method="get">
+                <form action="{% url 'parser' %}" id="againparser" method="get" class="mb-4 shadow p-4 bg-light rounded">
                     {% csrf_token %}
                     <input type="hidden" name="again" id="again-param">
                     <div id="pereparser" hidden>Перепарсинг запущен</div>
                     <button type="submit" class="btn btn-custom btn-lg" onclick="setAgainParam()">Запустить проверку</button>
                 </form>
                 <h2 class="mb-3 font-weight-bold">Добавить код</h2>
-                <button type="submit" class="btn btn-custom btn-lg" id="addcode" >Добавить код</button>
-                <form hidden action="{% url 'parser' %}" id="addshablon" method="post">
+                <button type="button" class="btn btn-custom btn-lg" id="addcode">Добавить код</button>
+                <form hidden action="{% url 'parser' %}" id="addshablon" method="post" class="mt-2 shadow p-4 bg-light rounded">
                     {% csrf_token %}
                     {{ form_shablon.as_p }}
                     <button type="submit" class="btn btn-custom btn-lg">Отправить</button>
@@ -60,7 +59,7 @@
             <div class="col-12">
                 <h2 class="font-weight-bold">Результаты:</h2>
                 {% if stats.check_again or stats.bad or stats.good %}
-                    <div>Успешно спаршено: {{ stats.good }} | Не спрашено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}</div>
+                    <div class="alert alert-info">Успешно спаршено: {{ stats.good }} | Не спрашено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}</div>
                 {% endif %}
                 <table class="table table-striped">
                     <thead>
@@ -84,21 +83,20 @@
                                 <td>{{ data.ooo }}</td>
                                 <td>{{ data.ip }}</td>
                                 <td>
-                                <form method="post" class="mb-4">
-                                    {% csrf_token %}
-                                    <div class="ischeck form-group">
-                                        <input type="checkbox" name="is_check" value="true" {% if data.is_check %}checked{% endif %}>
-                                    </div>
-                                    <input type="hidden" name="id" value={{ data.pk }}>
-                                    <button type="submit" hidden class="btnischeck btn btn-custom">Сохранить</button>
-                                </form>
+                                    <form method="post" class="mb-4">
+                                        {% csrf_token %}
+                                        <div class="ischeck form-group">
+                                            <input type="checkbox" name="is_check" value="true" {% if data.is_check %}checked{% endif %}>
+                                        </div>
+                                        <input type="hidden" name="id" value={{ data.pk }}>
+                                        <button type="submit" hidden class="btnischeck btn btn-custom">Сохранить</button>
+                                    </form>
                                 </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
 
-                <!-- Пагинация -->
                 <div class="pagination">
                     <span class="step-links">
                         {% if showdata.has_previous %}
@@ -132,7 +130,8 @@
         }
 
         document.getElementById("addcode").addEventListener("click", function(e) {
-            document.getElementById("addshablon").hidden = false;
+            const addShablonForm = document.getElementById("addshablon");
+            addShablonForm.hidden = !addShablonForm.hidden;
         });
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -175,6 +174,7 @@
         font-family: 'Roboto', sans-serif;
         font-size: 1rem;
         line-height: 1.5;
+        background-color: #f8f9fa;
     }
 
     h2, h3 {
@@ -192,18 +192,15 @@
     }
 
     .container-fluid {
-        padding-left: 0;
-        padding-right: 0;
+        padding: 0;
     }
 
     .row.no-gutters {
-        margin-left: 0;
-        margin-right: 0;
+        margin: 0;
     }
 
     .col-md-6, .col-12 {
-        padding-left: 0;
-        padding-right: 0;
+        padding: 0;
     }
 
     .pagination {
@@ -219,6 +216,10 @@
 
     .pagination .step-links .current {
         font-weight: bold;
+    }
+
+    .alert {
+        margin-top: 20px;
     }
 </style>
 {% endblock %}
