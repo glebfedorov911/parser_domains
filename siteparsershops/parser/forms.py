@@ -1,5 +1,5 @@
 from django import forms
-from .models import FileModel, DateModel
+from .models import FileModel, DateModel, ShowDataModel
 
 
 class FileForm(forms.ModelForm):
@@ -14,3 +14,19 @@ class DateForm(forms.ModelForm):
     class Meta:
         model = DateModel
         fields = "__all__"
+
+class ShablonForm(forms.Form):
+    CHOICES = (
+        ("DELETE", "Шаблон удаления",),
+        ("CHECK", "Шаблон перепроверки",),
+    )
+
+    select = forms.ChoiceField(widget=forms.Select, choices=CHOICES)
+    code = forms.CharField(widget=forms.Textarea(attrs={"rows":"5"}))
+
+class CheckBoxForm(forms.ModelForm):
+    is_check = forms.BooleanField(label="", required=False)
+
+    class Meta:
+        model = ShowDataModel
+        fields = ("is_check", )

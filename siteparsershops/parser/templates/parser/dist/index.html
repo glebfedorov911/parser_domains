@@ -43,8 +43,15 @@
                 <form action="{% url 'parser' %}" id="againparser" method="get">
                     {% csrf_token %}
                     <input type="hidden" name="again" id="again-param">
-                    <div id="parser" hidden>Парсер запущен</div>
+                    <div id="pereparser" hidden>Перепарсинг запущен</div>
                     <button type="submit" class="btn btn-custom btn-lg" onclick="setAgainParam()">Запустить проверку</button>
+                </form>
+                <h2 class="mb-3 font-weight-bold">Добавить код</h2>
+                <button type="submit" class="btn btn-custom btn-lg" id="addcode" >Добавить код</button>
+                <form hidden action="{% url 'parser' %}" id="addshablon" method="post">
+                    {% csrf_token %}
+                    {{ form_shablon.as_p }}
+                    <button type="submit" class="btn btn-custom btn-lg">Отправить</button>
                 </form>
             </div>
         </div>
@@ -52,6 +59,9 @@
         <div class="row no-gutters mt-4">
             <div class="col-12">
                 <h2 class="font-weight-bold">Результаты:</h2>
+                {% if stats.check_again or stats.bad or stats.good %}
+                    <div>Успешно спаршено: {{ stats.good }} | Не спрашено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}</div>
+                {% endif %}
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -61,6 +71,7 @@
                             <th>ИНН</th>
                             <th>ООО</th>
                             <th>ИП</th>
+                            <th>Перепроверка</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -72,10 +83,39 @@
                                 <td>{{ data.inn }}</td>
                                 <td>{{ data.ooo }}</td>
                                 <td>{{ data.ip }}</td>
+                                <td>
+                                <form method="post" class="mb-4">
+                                    {% csrf_token %}
+                                    <div class="ischeck form-group">
+                                        <input type="checkbox" name="is_check" value="true" {% if data.is_check %}checked{% endif %}>
+                                    </div>
+                                    <input type="hidden" name="id" value={{ data.pk }}>
+                                    <button type="submit" hidden class="btnischeck btn btn-custom">Сохранить</button>
+                                </form>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+
+                <!-- Пагинация -->
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if showdata.has_previous %}
+                            <a href="?page=1">&laquo; Первая</a>
+                            <a href="?page={{ showdata.previous_page_number }}">Предыдущая</a>
+                        {% endif %}
+
+                        <span class="current">
+                            Страница {{ showdata.number }} из {{ showdata.paginator.num_pages }}.
+                        </span>
+
+                        {% if showdata.has_next %}
+                            <a href="?page={{ showdata.next_page_number }}">Следующая</a>
+                            <a href="?page={{ showdata.paginator.num_pages }}">Последняя &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
             </div>
         </div>
     </div>
@@ -88,8 +128,23 @@
 
         function setAgainParam() {
             document.getElementById("again-param").value = "True";
-            document.getElementById("parser").hidden = false;
+            document.getElementById("pereparser").hidden = false;
         }
+
+        document.getElementById("addcode").addEventListener("click", function(e) {
+            document.getElementById("addshablon").hidden = false;
+        });
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.ischeck input[type="checkbox"]');
+            const buttons = document.querySelectorAll('.btnischeck');
+
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.addEventListener('click', function() {
+                    buttons[index].hidden = false;
+                });
+            });
+        });
     </script>
 
 {% endblock %}
@@ -149,6 +204,21 @@
     .col-md-6, .col-12 {
         padding-left: 0;
         padding-right: 0;
+    }
+
+    .pagination {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .pagination .step-links a {
+        margin: 0 5px;
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .pagination .step-links .current {
+        font-weight: bold;
     }
 </style>
 {% endblock %}

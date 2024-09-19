@@ -26,6 +26,7 @@ class ShowDataModel(models.Model):
     inn = models.CharField(max_length=15, null=True)
     ooo = models.TextField(null=True)
     ip = models.TextField(null=True)
+    is_check = models.BooleanField(default=False, null=True)
     file = models.ForeignKey(FileModel, null=True, unique=False, on_delete=models.SET_NULL)
 
 class AgainDataModel(models.Model):
