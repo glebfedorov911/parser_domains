@@ -12,7 +12,7 @@ RUN python -m venv venv && \
     ./venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Копируем только директорию с проектом в контейнер
-COPY siteparsershops/ ./siteparsershops/
+COPY siteparsershops/ .
 
 # Устанавливаем переменные окружения для Django
 ENV PYTHONUNBUFFERED=1 \
