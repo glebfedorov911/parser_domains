@@ -27,17 +27,17 @@ SECRET_KEY = 'django-insecure-ah8w(xwy5dtb6con&2_*-g)a!%*_1tj$ksimu45*)254jn47h2
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '127.0.0.1', 
-    'localhost',
-    "domains-main-31a38f-5007f5-82-146-32-206.traefik.me",
+    'http://127.0.0.1', 
+    'http://localhost',
+    "http://domains-main-31a38f-5007f5-82-146-32-206.traefik.me",
     "http://82.146.32.206:8000",
     "http://82.146.32.206",
 ]
 
 CSRF_TRUSTED_ORIGINS  = [
-    '127.0.0.1', 
-    'localhost',
-    "domains-main-31a38f-5007f5-82-146-32-206.traefik.me",
+    'http://127.0.0.1', 
+    'http://localhost',
+    "http://domains-main-31a38f-5007f5-82-146-32-206.traefik.me",
     "http://82.146.32.206:8000",
     "http://82.146.32.206",
 ]
