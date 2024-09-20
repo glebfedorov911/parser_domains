@@ -2,7 +2,7 @@
 
 {% block content %}
     <div class="container-fluid mt-5">
-        <div class="row no-gutters"> 
+        <div class="row no-gutters">
             <div class="col-md-6">
                 <h2 class="mb-3 font-weight-bold">Введите дату</h2>
                 <form method="post" class="mb-4 shadow p-4 bg-light rounded">
@@ -59,43 +59,49 @@
             <div class="col-12">
                 <h2 class="font-weight-bold">Результаты:</h2>
                 {% if stats.check_again or stats.bad or stats.good %}
-                    <div class="alert alert-info">Успешно спаршено: {{ stats.good }} | Не спрашено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}</div>
+                    <div class="alert alert-info">Успешно спаршено: {{ stats.good }}* | Не спрашено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}
+                    <br><span class=addable>*веб страницы без данных не отображаются</span></div>
                 {% endif %}
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Домен</th>
-                            <th>Телефон</th>
-                            <th>Email</th>
-                            <th>ИНН</th>
-                            <th>ООО</th>
-                            <th>ИП</th>
-                            <th>Перепроверка</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for data in showdata %}
+
+                <form method="post" id="saveForm" class="mb-4">
+                    {% csrf_token %}
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td>{{ data.domain }}</td>
-                                <td>{{ data.phone }}</td>
-                                <td>{{ data.email }}</td>
-                                <td>{{ data.inn }}</td>
-                                <td>{{ data.ooo }}</td>
-                                <td>{{ data.ip }}</td>
-                                <td>
-                                    <form method="post" class="mb-4">
-                                        {% csrf_token %}
-                                        <div class="ischeck form-group">
-                                            <input type="checkbox" name="is_check" value="true" {% if data.is_check %}checked{% endif %}>
-                                        </div>
-                                        <input type="hidden" name="id" value={{ data.pk }}>
-                                        <button type="submit" hidden class="btnischeck btn btn-custom">Сохранить</button>
-                                    </form>
-                                </td>
+                                <th>Домен</th>
+                                <th>Телефон</th>
+                                <th>Email</th>
+                                <th>ИНН</th>
+                                <th>ООО</th>
+                                <th>ИП</th>
+                                <th>Успешно</th>
+                                <th>Отправить на перепроверку</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for data in showdata %}
+                                <tr>
+                                    <td><a href=http://{{ data.domain }}>{{ data.domain }}</a></td>
+                                    <td>{{ data.phone }}</td>
+                                    <td>{{ data.email }}</td>
+                                    <td>{{ data.inn }}</td>
+                                    <td>{{ data.ooo }}</td>
+                                    <td>{{ data.ip }}</td>
+                                    <td>
+                                        <input type="checkbox" class="is_check" data-id="{{ data.pk }}">
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" class="check_again" data-id="{{ data.pk }}">
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <input type="hidden" name="is_check_ids" id="is_check_ids">
+                    <input type="hidden" name="check_again_ids" id="check_again_ids">
+                    <button type="submit" class="btn btn-custom btn-lg">Сохранить все</button>
+                </form>
 
                 <div class="pagination">
                     <span class="step-links">
@@ -133,15 +139,40 @@
             const addShablonForm = document.getElementById("addshablon");
             addShablonForm.hidden = !addShablonForm.hidden;
         });
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkboxes = document.querySelectorAll('.ischeck input[type="checkbox"]');
-            const buttons = document.querySelectorAll('.btnischeck');
 
-            checkboxes.forEach((checkbox, index) => {
-                checkbox.addEventListener('click', function() {
-                    buttons[index].hidden = false;
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxesIsCheck = document.querySelectorAll('.is_check');
+            const checkboxesCheckAgain = document.querySelectorAll('.check_again');
+            const isCheckIds = new Set();
+            const checkAgainIds = new Set();
+
+            checkboxesIsCheck.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const id = this.getAttribute('data-id');
+                    if (this.checked) {
+                        isCheckIds.add(id);
+                    } else {
+                        isCheckIds.delete(id);
+                    }
                 });
+            });
+
+            checkboxesCheckAgain.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const id = this.getAttribute('data-id');
+                    if (this.checked) {
+                        checkAgainIds.add(id);
+                    } else {
+                        checkAgainIds.delete(id);
+                    }
+                });
+            });
+
+            document.getElementById('saveForm').addEventListener('submit', function(e) {
+                const isCheckIdsInput = document.getElementById('is_check_ids');
+                const checkAgainIdsInput = document.getElementById('check_again_ids');
+                isCheckIdsInput.value = Array.from(isCheckIds).join(',');
+                checkAgainIdsInput.value = Array.from(checkAgainIds).join(',');
             });
         });
     </script>
@@ -221,5 +252,10 @@
     .alert {
         margin-top: 20px;
     }
+
+    .addable {
+        font-size: 12px;
+    }
+
 </style>
 {% endblock %}

@@ -74,65 +74,67 @@ class ParserView(TemplateView):
 
     def get(self, request):
         if (self.request.GET.get('start') == "True" or self.request.GET.get('again') == "True") and not self._is_start_parser:
-            # try:
-            if self.request.GET.get('again') == "True":
-                files = AgainDataModel.objects.all()
-                all_data = [eval(file.domain) for file in files]
-            else:
-                files = FileModel.objects.all().order_by("-id")
-                all_data = data_from_file(f"{MEDIA_ROOT}/{files[0].file}")
+            try:
+                if self.request.GET.get('again') == "True":
+                    files = AgainDataModel.objects.all()
+                    all_data = [eval(file.domain) for file in files]
+                else:
+                    files = FileModel.objects.all().order_by("-id")
+                    all_data = data_from_file(f"{MEDIA_ROOT}/{files[0].file}")
 
-            delete = [delete.code for delete in DeleteShablonModel.objects.all()]
-            shablon = [again.code for again in AgainShablonModel.objects.all()]
+                delete = [delete.code for delete in DeleteShablonModel.objects.all()]
+                shablon = [again.code for again in AgainShablonModel.objects.all()]
 
-            if len(all_data) < 16:
-                all_data = split_file(len(all_data) if len(all_data) != 0 else 1, all_data)
-            else:
-                all_data = split_file(16, all_data)
+                if len(all_data) < 16:
+                    all_data = split_file(len(all_data) if len(all_data) != 0 else 1, all_data)
+                else:
+                    all_data = split_file(16, all_data)
 
-            res = self.start_parser(all_data, delete, shablon)
-            good = bad = check_again = 0
-            again_domain = []
-            data = []
+                res = self.start_parser(all_data, delete, shablon)
+                good = bad = check_again = 0
+                again_domain = []
+                data = []
 
-            if self.request.GET.get('again') == "True":
-                files = AgainDataModel.objects.all().delete()
-                files = FileModel.objects.all().order_by("-id")
+                if self.request.GET.get('again') == "True":
+                    files = AgainDataModel.objects.all().delete()
+                    files = FileModel.objects.all().order_by("-id")
 
-            for r in res:
-                again_domain += r["again_domain"]
-                good += r["good"]
-                check_again += r["check_again"]
-                bad += r["bad"]
-                data += [(i, r["data"][i]) for i in r["data"]]
+                for r in res:
+                    again_domain += r["again_domain"]
+                    good += r["good"]
+                    check_again += r["check_again"]
+                    bad += r["bad"]
+                    data += [(i, r["data"][i]) for i in r["data"]]
 
-            StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, file=files[0]).save()
-            for row in data:
-                ShowDataModel.objects.create(domain=row[0], phone=row[1]["phone"], email=row[1]["email"], inn=row[1]["inn"],
-                                            ooo=row[1]["ooo"], ip=row[1]["individual"], file=files[0]).save()
-            for row in again_domain:
-                AgainDataModel.objects.create(domain=row)
-            
-            self._is_start_parser = False   
-            url_redirect = self.get_url()
+                StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, file=files[0]).save()
+                for row in data:
+                    if any([row[1][r] != [] for r in row[1]]):
+                        ShowDataModel.objects.create(domain=row[0], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
+                                                    ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), file=files[0]).save()
+                for row in again_domain:
+                    AgainDataModel.objects.create(domain=row)
+                
+                self._is_start_parser = False   
+                url_redirect = self.get_url()
 
-            return HttpResponseRedirect(url_redirect)
-            # except:
-            #     return HttpResponse("<h1>Файл не загружен либо загружен неправильно</h1> <br> <a href=''>Вернуться на главную страницу</a>")
+                return HttpResponseRedirect(url_redirect)
+            except:
+                return HttpResponse("""<h1>Файл не загружен либо загружен неправильно</h1> <br> <a href='/parser'>Вернуться на главную страницу</a>""")
         return render(request, self.template_name, context=self.get_context_data())
 
     def post(self, request, *args, **kwargs):
+        print(self.request.POST)
         if not self.request.FILES.get("file", None) is None:
             file = self.request.FILES.get("file")
             if str(file).split(".")[-1] not in ('csv', ):
-                return HttpResponse("<h1>Данный формат файла не поддерживается</h1> <br> <a href=''>Вернуться на главную страницу</a>")
+                return HttpResponse("<h1>Данный формат файла не поддерживается</h1> <br> <a href='/parser'>Вернуться на главную страницу</a>")
             save_data = FileModel.objects.create(file=file)
             save_data.save()
         
         if not self.request.POST.get("date", None) is None:
             date = self.request.POST.get("date")
             if date == "" or not self.check_format(date):
-                return HttpResponse("<h1>Плохой формат даты</h1> <br> <a href=''>Вернуться на главную страницу</a>")
+                return HttpResponse("<h1>Плохой формат даты</h1> <br> <a href='/parser'>Вернуться на главную страницу</a>")
             save_data = DateModel.objects.create(date=date)
             save_data.save()
 
@@ -143,14 +145,27 @@ class ParserView(TemplateView):
         if self.request.POST.get("select") == "CHECK":
            again = AgainShablonModel.objects.create(code=self.request.POST.get("code"))
            again.save()
-        
-        if not self.request.POST.get("id", None) is None:
-            data = ShowDataModel.objects.get(id=self.request.POST.get("id"))
-            if not self.request.POST.get("is_check", None) is None:
-                data.is_check = True
-            else:
-                data.is_check = False
-            data.save(update_fields=["is_check"])
+        print(self.request.POST.get("check_again_ids"))
+        if self.request.POST.get("check_again_ids") != '' and not self.request.POST.get("check_again_ids") is None:
+            for id_domain in self.request.POST.get("check_again_ids").split(","):
+                query_domain = ShowDataModel.objects.get(id=int(id_domain))
+                domain = ["", query_domain.domain]
+                query_domain.delete()
+                AgainDataModel.objects.create(domain=domain).save()
+
+        if self.request.POST.get("is_check_ids") != '' and not self.request.POST.get("is_check_ids") is None:
+            for id_domain in self.request.POST.get("is_check_ids").split(","):
+                try:
+                    ShowDataModel.objects.get(id=int(id_domain)).delete()
+                except:
+                    pass
+        # if not self.request.POST.get("id", None) is None:
+        #     data = ShowDataModel.objects.get(id=self.request.POST.get("id"))
+        #     if not self.request.POST.get("is_check", None) is None:
+        #         data.is_check = True
+        #     else:
+        #         data.is_check = False
+        #     data.save(update_fields=["is_check"])
         
         url_redirect = self.get_url()
 
