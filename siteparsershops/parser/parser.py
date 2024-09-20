@@ -174,7 +174,7 @@ def parser(all_data: list, shared, index, delete, shablon):
             continue
         print("not under", src[1])
         try:
-            req = requests.get("http://" + src[1], timeout=5)
+            req = requests.get("http://" + src[1], timeout=10)
         except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
             requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL) as e:
             # print(e, src)
@@ -204,7 +204,7 @@ def parser(all_data: list, shared, index, delete, shablon):
         for under_src in data[src[1]]["domain"]:
             try:
                 print("under11", under_src)
-                under_req = requests.get(under_src, timeout=3)
+                under_req = requests.get(under_src, timeout=7)
                 data[src[1]]["email"] += find_email(under_req.text)
                 data[src[1]]["phone"] += find_phone(under_req.text)
                 data[src[1]]["inn"] += find_inn(under_req.text)
