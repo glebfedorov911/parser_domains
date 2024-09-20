@@ -8,7 +8,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Устанавливаем зависимости
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --default-timeout=100 -r requirements.txt
 
 # Копируем только директорию с проектом в контейнер
 COPY siteparsershops/ ./siteparsershops/
