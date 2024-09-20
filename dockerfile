@@ -24,8 +24,8 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app/siteparsershops
 
 # Применяем миграции с активированным виртуальным окружением
-RUN ./venv/bin/python manage.py makemigrations && \
-    ./venv/bin/python manage.py migrate
+RUN ./venv/bin/python3 manage.py makemigrations && \
+    ./venv/bin/python3 manage.py migrate
 
 # Открываем порт для приложения
 EXPOSE 8000
