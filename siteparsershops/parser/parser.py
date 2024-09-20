@@ -15,10 +15,16 @@ from django.core.cache import cache
 
 message = 1
 
+# def data_from_file(filename: str) -> list:
+#     with open(filename, "r", newline="") as file:
+#         reader = csv.reader(file, delimiter=' ', quotechar="|")
+#         return [row[0].split(";")[:-1] for row in list(reader)[1:] if row[0].split(";")[:-1][0] == "2024-07-15"]
+
 def data_from_file(filename: str) -> list:
     with open(filename, "r", newline="") as file:
-        reader = csv.reader(file, delimiter=' ', quotechar="|")
-        return [row[0].split(";")[:-1] for row in list(reader)[1:] if row[0].split(";")[:-1][0] == "2024-07-15"]
+        reader = csv.reader(file)
+        result = [row[0].split(';')[:-1] if len(row[0].split(';')) == 3 else row[0].split(';') for row in reader if row[0] != ";"]
+        return result[1:]
 
 def find_email(html: str):
     return [res for res in re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}(?=\s|$|>|<|»|«|,)", html) if res.split(".")[-1] not in ["png", "webp", "jpeg", "jpg", "svg"]]
