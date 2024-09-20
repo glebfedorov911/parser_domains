@@ -22,11 +22,9 @@ ENV PYTHONUNBUFFERED=1 \
     DJANGO_SETTINGS_MODULE=siteparsershops.settings \
     HOST=0.0.0.0
 
-WORKDIR /app/siteparsershops
-
 # Применяем миграции с активированным виртуальным окружением
-RUN python manage.py makemigrations && \
-    python manage.py migrate
+RUN python siteparsershops/manage.py makemigrations && \
+    python siteparsershops/manage.py migrate
 
 # Открываем порт для приложения
 EXPOSE 8000
