@@ -28,4 +28,4 @@ RUN ./venv/bin/python siteparsershops/manage.py makemigrations && \
 EXPOSE 8000
 
 # Запускаем приложение через Uvicorn
-CMD ["sh", "-c", "PYTHONPATH=/app ./venv/bin/python -m uvicorn siteparsershops.asgi:application --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "PYTHONPATH=/app ./venv/bin/python -m uvicorn siteparsershops.siteparsershops.asgi:application --host 0.0.0.0 --port 8000"]
