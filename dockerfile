@@ -4,14 +4,14 @@ FROM python:3.12-slim
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Создаем виртуальное окружение
-RUN python3 -m venv venv
-
 # Копируем файл зависимостей requirements.txt в контейнер
-COPY /siteparsershops/requirements.txt .
+COPY siteparsershops/requirements.txt .
 
-# Устанавливаем зависимости
-RUN ./venv/bin/pip install --no-cache-dir -r requirements.txt
+# Создаем виртуальное окружение и устанавливаем зависимости
+RUN python -m venv venv && \
+    ./venv/bin/pip install --no-cache-dir -r requirements.txt
+
+RUN ls -la ./venv/bin/
 
 # Копируем только директорию с проектом в контейнер
 COPY siteparsershops/ ./siteparsershops/
