@@ -73,6 +73,7 @@ class ParserView(TemplateView):
         return url_redirect
 
     def get(self, request):
+        print(self.request.GET)
         if (self.request.GET.get('start') == "True" or self.request.GET.get('again') == "True") and not self._is_start_parser:
             # try:
             if self.request.GET.get('again') == "True":
