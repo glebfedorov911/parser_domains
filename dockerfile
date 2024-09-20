@@ -14,7 +14,7 @@ RUN . venv/bin/activate && pip install --upgrade pip
 COPY requirements.txt .
 
 # Устанавливаем зависимости
-RUN pip install --no-cache-dir -i -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем только директорию с проектом в контейнер
 COPY siteparsershops/ ./siteparsershops/
