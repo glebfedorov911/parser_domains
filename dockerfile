@@ -12,7 +12,7 @@ RUN python -m venv venv && \
     ./venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Копируем только директорию с проектом в контейнер
-COPY siteparsershops/ ./siteparsershops/
+COPY siteparsershops/ .
 
 # Устанавливаем переменные окружения для Django
 ENV PYTHONUNBUFFERED=1 \
@@ -28,4 +28,4 @@ RUN ./venv/bin/python siteparsershops/manage.py makemigrations && \
 EXPOSE 8000
 
 # Запускаем приложение через Uvicorn
-CMD ["sh", "-c", "PYTHONPATH=/app ./venv/bin/python -m uvicorn siteparsershops.siteparsershops.asgi:application --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "PYTHONPATH=/app ./venv/bin/python -m uvicorn siteparsershops.asgi:application --host 0.0.0.0 --port 8000"]
