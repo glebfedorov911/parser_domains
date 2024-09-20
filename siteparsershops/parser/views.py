@@ -73,7 +73,6 @@ class ParserView(TemplateView):
         return url_redirect
 
     def get(self, request):
-        print(self.request.GET)
         if (self.request.GET.get('start') == "True" or self.request.GET.get('again') == "True") and not self._is_start_parser:
             # try:
             if self.request.GET.get('again') == "True":
@@ -86,8 +85,11 @@ class ParserView(TemplateView):
             delete = [delete.code for delete in DeleteShablonModel.objects.all()]
             shablon = [again.code for again in AgainShablonModel.objects.all()]
 
-            all_data = split_file(16, all_data)
-            
+            if len(all_data) < 16:
+                all_data = split_file(len(all_data) if len(all_data) != 0 else 1, all_data)
+            else:
+                all_data = split_file(16, all_data)
+
             res = self.start_parser(all_data, delete, shablon)
             good = bad = check_again = 0
             again_domain = []
@@ -120,7 +122,6 @@ class ParserView(TemplateView):
         return render(request, self.template_name, context=self.get_context_data())
 
     def post(self, request, *args, **kwargs):
-        print(self.request.POST)
         if not self.request.FILES.get("file", None) is None:
             file = self.request.FILES.get("file")
             if str(file).split(".")[-1] not in ('csv', ):
