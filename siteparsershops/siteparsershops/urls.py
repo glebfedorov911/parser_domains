@@ -19,12 +19,15 @@ from django.urls import path, include
 from django.conf.urls.static import static
 
 from . import settings
+from parser.views import page_not_found
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("parser/", include("parser.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+handler404 = page_not_found
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

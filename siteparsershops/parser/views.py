@@ -175,3 +175,6 @@ class ParserView(TemplateView):
     def check_format(self, date):
         frmt = r"\d{2}.\d{2}.\d{4}-\d{2}.\d{2}.\d{4}"
         return len(re.findall(frmt, date)) != 0
+
+def page_not_found(request, exception):
+    return HttpResponse("<h1>Такой страницы не существует =)</h1> <br> <a href='/parser'>Перейти на главную страницу</a>")
