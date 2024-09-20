@@ -28,7 +28,7 @@ def data_from_file(filename: str) -> list:
 
 def find_email(html: str):
     return [res for res in re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}(?=\s|$|>|<|»|«|,)", html) if res.split(".")[-1] not in ["png", "webp", "jpeg", "jpg", "svg"]]
-
+# 
 def find_phone(html: str):
     pat1 = r"(?<=[\s><:])\+[0-9]{9,15}(?=\s|$|>|<)"
     pat2 = r"(?<=[\s><:])\+\d{1,3} \d{3} \d{3}-\d{2}-\d{2}" 
