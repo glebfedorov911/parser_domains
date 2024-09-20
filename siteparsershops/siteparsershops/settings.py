@@ -26,7 +26,13 @@ SECRET_KEY = 'django-insecure-ah8w(xwy5dtb6con&2_*-g)a!%*_1tj$ksimu45*)254jn47h2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = [
+    '127.0.0.1', 
+    'localhost',
+    "domains-main-31a38f-5007f5-82-146-32-206.traefik.me",
+    "http://82.146.32.206:8000",
+    "http://82.146.32.206"
+]
 
 
 # Application definition
