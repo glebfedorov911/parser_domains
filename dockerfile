@@ -11,9 +11,6 @@ COPY siteparsershops/requirements.txt .
 RUN python -m venv venv && \
     ./venv/bin/pip install --no-cache-dir -r requirements.txt
 
-RUN ls -la ./venv/bin/
-RUN bash -c "source ./venv/bin/activate"
-
 # Копируем только директорию с проектом в контейнер
 COPY siteparsershops/ ./siteparsershops/
 
@@ -23,11 +20,11 @@ ENV PYTHONUNBUFFERED=1 \
     HOST=0.0.0.0
 
 # Применяем миграции с активированным виртуальным окружением
-RUN python siteparsershops/manage.py makemigrations && \
-    python siteparsershops/manage.py migrate
+RUN ./venv/bin/python siteparsershops/manage.py makemigrations && \
+    ./venv/bin/python siteparsershops/manage.py migrate
 
 # Открываем порт для приложения
 EXPOSE 8000
 
 # Запускаем приложение через Uvicorn
-CMD ["python", "-m", "uvicorn", "siteparsershops.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["./venv/bin/python", "-m", "uvicorn", "siteparsershops.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
