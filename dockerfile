@@ -24,7 +24,7 @@ ENV PYTHONUNBUFFERED=1 \
     DJANGO_SETTINGS_MODULE=siteparsershops.settings \
     HOST=0.0.0.0
 
-RUN cd siteparsershops
+WORKDIR /app/siteparsershops
 
 # Применяем миграции
 RUN python manage.py makemigrations
