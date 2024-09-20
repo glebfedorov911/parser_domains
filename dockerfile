@@ -8,7 +8,7 @@ WORKDIR /app
 RUN python3 -m venv venv
 
 # Копируем файл зависимостей requirements.txt в контейнер
-COPY requirements.txt .
+COPY /siteparsershops/requirements.txt .
 
 # Устанавливаем зависимости
 RUN ./venv/bin/pip install --no-cache-dir -r requirements.txt
