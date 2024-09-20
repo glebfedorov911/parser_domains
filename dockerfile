@@ -4,14 +4,14 @@ FROM python:3.12-slim
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Скопируем файл зависимостей requirements.txt в контейнер
-COPY requirements.txt .
-
 # Создаем виртуальное окружение
 RUN python3 -m venv venv
 
 # Активируем виртуальное окружение и обновляем pip
 RUN . venv/bin/activate && pip install --upgrade pip
+
+# Скопируем файл зависимостей requirements.txt в контейнер
+COPY requirements.txt .
 
 # Устанавливаем зависимости
 RUN pip install --no-cache-dir -i -r requirements.txt
