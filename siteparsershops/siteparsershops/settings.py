@@ -32,6 +32,8 @@ ALLOWED_HOSTS = [
     "http://domains-main-31a38f-5007f5-82-146-32-206.traefik.me",
     "http://82.146.32.206:8000",
     "http://82.146.32.206",
+
+    "https://domains-main-31a38f-5007f5-82-146-32-206.traefik.me",
 ]
 
 CSRF_TRUSTED_ORIGINS  = [
@@ -40,6 +42,8 @@ CSRF_TRUSTED_ORIGINS  = [
     "http://domains-main-31a38f-5007f5-82-146-32-206.traefik.me",
     "http://82.146.32.206:8000",
     "http://82.146.32.206",
+
+    "https://domains-main-31a38f-5007f5-82-146-32-206.traefik.me",
 ]
 
 # Application definition
