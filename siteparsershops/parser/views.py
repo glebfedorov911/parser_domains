@@ -9,7 +9,7 @@ from django.core.paginator import Paginator
 from .forms import FileForm, DateForm, ShablonForm, CheckBoxForm
 from .models import FileModel, DateModel, StatisticsModel, ShowDataModel, AgainDataModel, AgainShablonModel, DeleteShablonModel
 from .parser import parser, data_from_file, split_file
-from app.siteparsershops.settings import MEDIA_ROOT
+from .siteparsershops.settings import MEDIA_ROOT
 
 import re
 import threading
