@@ -7,8 +7,14 @@ WORKDIR /app
 # Скопируем файл зависимостей requirements.txt в контейнер
 COPY requirements.txt .
 
+# Создаем виртуальное окружение
+RUN python3 -m venv venv
+
+# Активируем виртуальное окружение и обновляем pip
+RUN . venv/bin/activate && pip install --upgrade pip
+
 # Устанавливаем зависимости
-RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+RUN pip install --no-cache-dir -i -r requirements.txt
 
 # Копируем только директорию с проектом в контейнер
 COPY siteparsershops/ ./siteparsershops/
@@ -17,6 +23,7 @@ COPY siteparsershops/ ./siteparsershops/
 ENV PYTHONUNBUFFERED=1 \
     DJANGO_SETTINGS_MODULE=siteparsershops.settings \
     HOST=0.0.0.0
+
 
 # Применяем миграции
 RUN python siteparsershops/manage.py makemigrations
