@@ -17,7 +17,8 @@ COPY siteparsershops/ ./siteparsershops/
 # Устанавливаем переменные окружения для Django
 ENV PYTHONUNBUFFERED=1 \
     DJANGO_SETTINGS_MODULE=siteparsershops.settings \
-    HOST=0.0.0.0
+    HOST=0.0.0.0 \
+    PYTHONPATH=/app
 
 # Применяем миграции с активированным виртуальным окружением
 RUN ./venv/bin/python siteparsershops/manage.py makemigrations && \
