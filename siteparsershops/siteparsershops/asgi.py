@@ -17,16 +17,7 @@ from django.conf import settings
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 
-from parser.consumers import MyWSConsumer
 
-# os.environ['DJANGO_SETTINGS_MODULE']='siteparsershops.settings'
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'siteparsershops.settings')
 
-application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(
-        URLRouter([
-            path("ws/parser/", MyWSConsumer.as_asgi()),
-        ])
-    ),
-})
+application = get_asgi_application()
