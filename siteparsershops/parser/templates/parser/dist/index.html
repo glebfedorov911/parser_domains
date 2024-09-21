@@ -122,7 +122,9 @@
                         {% endif %}
 
                         <span class="current">
-                            Страница {{ showdata.number }} из {{ showdata.paginator.num_pages }}.
+                            {% if showdata.paginator.num_pages %}
+                                Страница {{ showdata.number }} из {{ showdata.paginator.num_pages }}.
+                            {% endif %}
                         </span>
 
                         {% if showdata.has_next %}
