@@ -173,6 +173,7 @@ def parser(all_data: list, shared, index, delete, shablon):
     bad = 0
     good = 0
     check_again = 0
+    count_shop_store_domains = 0
     again_domain = []
     data = {}
     
@@ -180,6 +181,7 @@ def parser(all_data: list, shared, index, delete, shablon):
         if not ("shop" in src[1].lower() or "store" in src[1].lower()):
             print("skip")
             continue
+        count_shop_store_domains += 1
         print("not under", src[1])
         try:
             req = requests.get("http://" + src[1], timeout=10)
@@ -223,7 +225,7 @@ def parser(all_data: list, shared, index, delete, shablon):
                 # print("ОШИБКА", src, e)
                 continue
         unique(data, src)
-    shared[index] = {"data": data, "good": good, "bad": bad, "check_again": check_again, "again_domain": again_domain}
+    shared[index] = {"data": data, "good": good, "bad": bad, "check_again": check_again, "again_domain": again_domain, "count_shop_store_domains": count_shop_store_domains}
 
 def split_file(nums: int, data: list):
     start = 0

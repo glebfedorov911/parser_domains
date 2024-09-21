@@ -17,6 +17,8 @@ class StatisticsModel(models.Model):
     good = models.IntegerField(null=False)
     bad = models.IntegerField(null=False)
     check_again = models.IntegerField(null=False)
+    count_domains = models.IntegerField(null=False)
+    count_shop_store_domains = models.IntegerField(null=False)
     file = models.ForeignKey(FileModel, null=True, unique=False, on_delete=models.SET_NULL)
 
 class ShowDataModel(models.Model):

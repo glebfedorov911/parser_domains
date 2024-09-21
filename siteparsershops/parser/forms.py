@@ -22,7 +22,7 @@ class ShablonForm(forms.Form):
     )
 
     select = forms.ChoiceField(widget=forms.Select, choices=CHOICES)
-    code = forms.CharField(widget=forms.Textarea(attrs={"rows":"5"}))
+    code = forms.CharField(widget=forms.Textarea(attrs={"rows":"5", "cols": "15", "style": "resize: both;"}))
 
 class CheckBoxForm(forms.ModelForm):
     is_check = forms.BooleanField(label="", required=False)

@@ -2,64 +2,73 @@
 
 {% block content %}
     <div class="container-fluid mt-5">
-        <div class="row no-gutters">
-            <div class="col-md-6">
-                <h2 class="mb-3 font-weight-bold">Введите дату</h2>
-                <form method="post" class="mb-4 mr-4 shadow p-4 bg-light rounded">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        {{ form_date.as_p }}
-                    </div>
-                    <button type="submit" class="btn btn-custom">Ввести дату</button>
-                </form>
+        <!-- Блок с датой -->
+        <div class="row mb-4">
+            <div class="col-12 text-center">
                 <h3 class="font-weight-bold">Дата: {{ date.date }}</h3>
             </div>
-            <div class="col-md-6">
-                <h2 class="mb-3 font-weight-bold">Загрузить файл</h2>
-                <form method="post" enctype="multipart/form-data" class="mb-4 shadow p-4 bg-light rounded">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        {{ form_file.as_p }}
+        </div>
+
+        <!-- Все блоки в один ряд с одинаковым размером и отступами -->
+        <div class="row no-gutters d-flex justify-content-between">
+            <div class="col-md-3 mb-3">
+                <div class="shadow p-4 bg-light rounded h-100 d-flex flex-column">
+                    <h2 class="mb-3 font-weight-bold">Загрузить файл</h2>
+                    <form method="post" enctype="multipart/form-data" class="flex-grow-1">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ form_file.as_p }}
+                        </div>
+                        <button type="submit" class="btn btn-custom btn-small w-100">Загрузить файл</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="shadow p-4 bg-light rounded h-100 d-flex flex-column">
+                    <h2 class="mb-3 font-weight-bold">Запуск парсера</h2>
+                    <form action="{% url 'parser' %}" id="startparser" method="get" class="flex-grow-1">
+                        {% csrf_token %}
+                        <input type="hidden" name="start" id="start-param">
+                        <div id="parser" hidden>Парсер запущен</div>
+                        <button type="submit" class="btn btn-custom btn-small w-100" onclick="setStartParam()">Запустить парсер</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="shadow p-4 bg-light rounded h-100 d-flex flex-column">
+                    <h2 class="mb-3 font-weight-bold">Запуск проверки</h2>
+                    <form action="{% url 'parser' %}" id="againparser" method="get" class="flex-grow-1">
+                        {% csrf_token %}
+                        <input type="hidden" name="again" id="again-param">
+                        <div id="pereparser" hidden>Перепроверка запущена</div>
+                        <button type="submit" class="btn btn-custom btn-small w-100" onclick="setAgainParam()">Запустить проверку</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="shadow p-4 bg-light rounded h-100 d-flex flex-column">
+                    <h2 class="mb-3 font-weight-bold">Добавить код</h2>
+                    <div class="flex-grow-1">
+                        <button type="button" class="btn btn-custom btn-small w-100 mb-2" id="addcode">Добавить код</button>
+                        <form hidden action="{% url 'parser' %}" id="addshablon" method="post">
+                            {% csrf_token %}
+                            {{ form_shablon.as_p }}
+                            <button type="submit" class="btn btn-custom btn-small w-100">Отправить</button>
+                        </form>
                     </div>
-                    <button type="submit" class="btn btn-custom">Загрузить файл</button>
-                </form>
+                </div>
             </div>
         </div>
 
-        <div class="row no-gutters">
-            <div class="col-md-6">
-                <h2 class="mb-3 font-weight-bold">Запуск парсера</h2>
-                <form action="{% url 'parser' %}" id="startparser" method="get" class="mb-4 mr-4 shadow p-4 bg-light rounded">
-                    {% csrf_token %}
-                    <input type="hidden" name="start" id="start-param">
-                    <div id="parser" hidden>Парсер запущен</div>
-                    <button type="submit" class="btn btn-custom btn-lg" onclick="setStartParam()">Запустить парсер</button>
-                </form>
-            </div>
-
-            <div class="col-md-6">
-                <h2 class="mb-3 font-weight-bold">Запуск проверки</h2>
-                <form action="{% url 'parser' %}" id="againparser" method="get" class="mb-4 shadow p-4 bg-light rounded">
-                    {% csrf_token %}
-                    <input type="hidden" name="again" id="again-param">
-                    <div id="pereparser" hidden>Перепроверка запущена</div>
-                    <button type="submit" class="btn btn-custom btn-lg" onclick="setAgainParam()">Запустить проверку</button>
-                </form>
-                <h2 class="mb-3 font-weight-bold">Добавить код</h2>
-                <button type="button" class="btn btn-custom btn-lg" id="addcode">Добавить код</button>
-                <form hidden action="{% url 'parser' %}" id="addshablon" method="post" class="mt-2 shadow p-4 bg-light rounded">
-                    {% csrf_token %}
-                    {{ form_shablon.as_p }}
-                    <button type="submit" class="btn btn-custom btn-lg">Отправить</button>
-                </form>
-            </div>
-        </div>
-
+        <!-- Таблица под блоками -->
         <div class="row no-gutters mt-4">
             <div class="col-12">
                 <h2 class="font-weight-bold">Результаты:</h2>
                 {% if stats.check_again or stats.bad or stats.good %}
-                    <div class="alert alert-info">Успешно спаршено: {{ stats.good }}* | Не спрашено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}
+                    <div class="alert alert-info">Всего доменов: {{ stats.count_domains }} | Количество Shop/Store доменов: {{ stats.count_shop_store_domains }} | Успешно спаршено: {{ stats.good }}* | Не спрашено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}
                     <br><span class=addable>*веб страницы без данных не отображаются</span></div>
                 {% endif %}
 
@@ -102,7 +111,7 @@
 
                     <input type="hidden" name="is_check_ids" id="is_check_ids">
                     <input type="hidden" name="check_again_ids" id="check_again_ids">
-                    <button type="submit" class="btn btn-custom btn-lg">Применить</button>
+                    <button type="submit" class="btn btn-custom btn-small w-100">Применить</button>
                 </form>
 
                 <div class="pagination">
@@ -187,8 +196,8 @@
         background-color: #5bc0de;
         border-color: #46b8da;
         color: white;
-        font-size: 1.2rem;
-        padding: 10px 20px;
+        font-size: 1rem;
+        padding: 5px 10px;
         border-radius: 30px;
         transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
@@ -198,9 +207,9 @@
         box-shadow: 0px 4px 15px rgba(0, 123, 255, 0.3);
     }
 
-    .btn-lg {
-        font-size: 1.4rem;
-        padding: 15px 30px;
+    .btn-small {
+        font-size: 0.9rem;
+        padding: 5px 10px;
     }
 
     body {
@@ -232,7 +241,7 @@
         margin: 0;
     }
 
-    .col-md-6, .col-12 {
+    .col-md-3 {
         padding: 0;
     }
 
@@ -258,6 +267,5 @@
     .addable {
         font-size: 12px;
     }
-
 </style>
 {% endblock %}
