@@ -40,7 +40,7 @@ class ParserView(TemplateView):
         context["date"] = lastdate[0] if len(lastdate) != 0 else ""
         if len(lastfile) != 0:
             # context["showdata"] = ShowDataModel.objects.filter(file_id=lastfile[0].pk)
-            showdata = ShowDataModel.objects.filter(file_id=lastfile[0].pk)
+            showdata = ShowDataModel.objects.filter(file_id=lastfile[0].pk, is_showing=True)
             paginator = Paginator(showdata, 10)
             
             page_number = self.request.GET.get("page")
@@ -110,7 +110,11 @@ class ParserView(TemplateView):
                 for row in data:
                     if any([row[1][r] != [] for r in row[1]]):
                         ShowDataModel.objects.create(domain=row[0], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
-                                                    ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), file=files[0]).save()
+                                                    ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), is_showing=True, file=files[0]).save()
+                    else:
+                        ShowDataModel.objects.create(domain=row[0], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
+                                                    ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), is_showing=False, file=files[0]).save()
+
                 for row in again_domain:
                     AgainDataModel.objects.create(domain=row)
                 
@@ -144,6 +148,7 @@ class ParserView(TemplateView):
         if self.request.POST.get("select") == "CHECK":
            again = AgainShablonModel.objects.create(code=self.request.POST.get("code"))
            again.save()
+           
         if self.request.POST.get("check_again_ids") != '' and not self.request.POST.get("check_again_ids") is None:
             for id_domain in self.request.POST.get("check_again_ids").split(","):
                 query_domain = ShowDataModel.objects.get(id=int(id_domain))
@@ -154,7 +159,9 @@ class ParserView(TemplateView):
         if self.request.POST.get("is_check_ids") != '' and not self.request.POST.get("is_check_ids") is None:
             for id_domain in self.request.POST.get("is_check_ids").split(","):
                 try:
-                    ShowDataModel.objects.get(id=int(id_domain)).delete()
+                    show = ShowDataModel.objects.get(id=int(id_domain))
+                    show.is_showing = False
+                    show.save()
                 except:
                     pass
         # if not self.request.POST.get("id", None) is None:

@@ -80,20 +80,22 @@
                         </thead>
                         <tbody>
                             {% for data in showdata %}
-                                <tr>
-                                    <td><a href=http://{{ data.domain }}>{{ data.domain }}</a></td>
-                                    <td>{{ data.phone }}</td>
-                                    <td>{{ data.email }}</td>
-                                    <td>{{ data.inn }}</td>
-                                    <td>{{ data.ooo }}</td>
-                                    <td>{{ data.ip }}</td>
-                                    <td>
-                                        <input type="checkbox" class="is_check" data-id="{{ data.pk }}">
-                                    </td>
-                                    <td>
-                                        <input type="checkbox" class="check_again" data-id="{{ data.pk }}">
-                                    </td>
-                                </tr>
+                                {% if data.is_showing %}
+                                    <tr>
+                                        <td><a href=http://{{ data.domain }}>{{ data.domain }}</a></td>
+                                        <td>{{ data.phone }}</td>
+                                        <td>{{ data.email }}</td>
+                                        <td>{{ data.inn }}</td>
+                                        <td>{{ data.ooo }}</td>
+                                        <td>{{ data.ip }}</td>
+                                        <td>
+                                            <input type="checkbox" class="is_check" data-id="{{ data.pk }}">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox" class="check_again" data-id="{{ data.pk }}">
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>
