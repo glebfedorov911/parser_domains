@@ -5,7 +5,7 @@
         <div class="row no-gutters">
             <div class="col-md-6">
                 <h2 class="mb-3 font-weight-bold">Введите дату</h2>
-                <form method="post" class="mb-4 shadow p-4 bg-light rounded">
+                <form method="post" class="mb-4 mr-4 shadow p-4 bg-light rounded">
                     {% csrf_token %}
                     <div class="form-group">
                         {{ form_date.as_p }}
@@ -29,7 +29,7 @@
         <div class="row no-gutters">
             <div class="col-md-6">
                 <h2 class="mb-3 font-weight-bold">Запуск парсера</h2>
-                <form action="{% url 'parser' %}" id="startparser" method="get" class="mb-4 shadow p-4 bg-light rounded">
+                <form action="{% url 'parser' %}" id="startparser" method="get" class="mb-4 mr-4 shadow p-4 bg-light rounded">
                     {% csrf_token %}
                     <input type="hidden" name="start" id="start-param">
                     <div id="parser" hidden>Парсер запущен</div>
