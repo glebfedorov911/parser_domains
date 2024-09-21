@@ -43,7 +43,7 @@ class ParserView(TemplateView):
             showdata = ShowDataModel.objects.filter(file_id=lastfile[0].pk, is_showing=True)
             paginator = Paginator(showdata, 10)
             
-            page_number = self.request.GET.get("page")
+            page_number = self.request.GET.get("page", None)
             page_obj = paginator.get_page(page_number)
 
             context["showdata"] = page_obj
@@ -73,10 +73,10 @@ class ParserView(TemplateView):
         return url_redirect
 
     def get(self, request):
-        if (self.request.GET.get('start') == "True" or self.request.GET.get('again') == "True") and not self._is_start_parser:
+        if (self.request.GET.get('start', None) == "True" or self.request.GET.get('again', None) == "True") and not self._is_start_parser:
             # try:
             print('1')
-            if self.request.GET.get('again') == "True":
+            if self.request.GET.get('again', None) == "True":
                 files = AgainDataModel.objects.all()
                 all_data = [eval(file.domain) for file in files]
             else:
@@ -98,7 +98,7 @@ class ParserView(TemplateView):
             again_domain = []
             data = []
             print('4')
-            if self.request.GET.get('again') == "True":
+            if self.request.GET.get('again', None) == "True":
                 files = AgainDataModel.objects.all().delete()
                 files = FileModel.objects.all().order_by("-id")
             print('5')
