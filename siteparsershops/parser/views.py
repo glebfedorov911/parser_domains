@@ -105,14 +105,16 @@ class ParserView(TemplateView):
                     check_again += r["check_again"]
                     bad += r["bad"]
                     data += [(i, r["data"][i]) for i in r["data"]]
+                
+                if self.request.GET.get('again', None):
+                    check_again = 0
 
                 StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, file=files[0]).save()
                 for row in data:
                     if any([row[1][r] != [] for r in row[1]]):
                         ShowDataModel.objects.create(domain=row[0], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
                                                     ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), file=files[0]).save()
-                if not (self.request.GET.get('again') == "True"):
-                    print('11)')
+                if self.request.GET.get('start', None):
                     for row in again_domain:
                         AgainDataModel.objects.create(domain=row)
                 
@@ -125,7 +127,6 @@ class ParserView(TemplateView):
         return render(request, self.template_name, context=self.get_context_data())
 
     def post(self, request, *args, **kwargs):
-        print(self.request.POST)
         if not self.request.FILES.get("file", None) is None:
             file = self.request.FILES.get("file")
             if str(file).split(".")[-1] not in ('csv', ):
@@ -147,7 +148,6 @@ class ParserView(TemplateView):
         if self.request.POST.get("select") == "CHECK":
            again = AgainShablonModel.objects.create(code=self.request.POST.get("code"))
            again.save()
-        print(self.request.POST.get("check_again_ids"))
         if self.request.POST.get("check_again_ids") != '' and not self.request.POST.get("check_again_ids") is None:
             for id_domain in self.request.POST.get("check_again_ids").split(","):
                 query_domain = ShowDataModel.objects.get(id=int(id_domain))
