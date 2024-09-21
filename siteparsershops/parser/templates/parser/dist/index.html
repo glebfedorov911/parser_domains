@@ -2,10 +2,15 @@
 
 {% block content %}
     <div class="container-fluid mt-5">
+        <!-- Блок с датой и календарем -->
         <div class="row mb-4">
             <div class="col-12 text-center">
+                <h3 class="font-weight-bold">Дата: {{ date_in_parser }}</h3>
+                
+                <!-- Блок с календарем -->
                 <h3 class="font-weight-bold mt-4">Календарь</h3>
 
+                <!-- Выбор месяца и года -->
                 <div class="calendar-controls mb-3">
                     <select id="month-select" onchange="renderCalendar()">
                         <option value="0">Январь</option>
@@ -25,6 +30,7 @@
                     <input type="number" id="year-input" value="{{ current_year }}" onchange="renderCalendar()">
                 </div>
 
+                <!-- Таблица календаря -->
                 <table class="calendar-table">
                     <thead>
                         <tr>
@@ -38,11 +44,13 @@
                         </tr>
                     </thead>
                     <tbody id="calendar-body">
+                        <!-- Дни месяца будут отрисованы здесь с помощью JavaScript -->
                     </tbody>
                 </table>
             </div>
         </div>
 
+        <!-- Все блоки в один ряд с одинаковым размером и отступами -->
         <div class="row no-gutters d-flex justify-content-between">
             <div class="col-md-3 mb-3">
                 <div class="shadow p-4 bg-light rounded h-100 d-flex mr-4 flex-column">
@@ -96,11 +104,12 @@
             </div>
         </div>
 
+        <!-- Таблица под блоками -->
         <div class="row no-gutters mt-4">
             <div class="col-12">
                 <h2 class="font-weight-bold">Результаты:</h2>
                 {% if stats.check_again or stats.bad or stats.good %}
-                    <div class="alert alert-info">Всего доменов: {{ stats.count_domains }} | Количество Shop/Store доменов: {{ stats.count_shop_store_domains }} | Успешно спаршено: {{ stats.good }}* | Не спаршено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}
+                    <div class="alert alert-info">Всего доменов: {{ stats.count_domains }} | Количество Shop/Store доменов: {{ stats.count_shop_store_domains }} | Успешно спаршено: {{ stats.good }}* | Не спрашено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}
                     <br><span class=addable>*веб страницы без данных не отображаются</span></div>
                 {% endif %}
 
@@ -123,7 +132,7 @@
                             {% for data in showdata %}
                                 {% if data.is_showing %}
                                     <tr>
-                                        <td><a href="http://{{ data.domain }}">{{ data.domain }}</a></td>
+                                        <td><a href=http://{{ data.domain }}>{{ data.domain }}</a></td>
                                         <td>{{ data.phone }}</td>
                                         <td>{{ data.email }}</td>
                                         <td>{{ data.inn }}</td>
@@ -185,6 +194,7 @@
             addShablonForm.hidden = !addShablonForm.hidden;
         });
 
+        // Функция для отрисовки календаря
         function renderCalendar() {
             const monthSelect = document.getElementById('month-select');
             const yearInput = document.getElementById('year-input');
@@ -193,101 +203,123 @@
             const month = parseInt(monthSelect.value);
             const year = parseInt(yearInput.value);
 
-            const dates = `{{ date_in_parser }}`.split(',').map(date => {
+            // Получаем массив выделенных дат
+            
+            const dates1 = `{{ date_in_parser_with_nth_status }}`.split(',').map(date => {
                 if (/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
                     const [day, month, year] = date.split(".");
-                    return new Date(`${year}-${month}-${day}`); 
+                    return new Date(`${year}-${month}-${day}`); // Преобразуем в формат YYYY-MM-DD
                 }
-                return new Date(date);
+                return new Date(date); // Возвращаем как есть, если уже в формате YYYY-MM-DD
             });
 
-            
-            const highlightedDates = new Set(dates.map(date => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`));
+            const dates2 = `{{ date_in_parser_already_parse }}`.split(',').map(date => {
+                if (/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+                    const [day, month, year] = date.split(".");
+                    return new Date(`${year}-${month}-${day}`); // Преобразуем в формат YYYY-MM-DD
+                }
+                return new Date(date); // Возвращаем как есть, если уже в формате YYYY-MM-DD
+            });
 
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            // Сохраняем выделенные даты в формате "YYYY-MM-DD"
+            const highlightedDates1 = new Set(dates1.map(date => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`));
+            const highlightedDates2 = new Set(dates2.map(date => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`));
 
-            calendarBody.innerHTML = '';
+            const firstDay = new Date(year, month, 1).getDay(); // Определяем, с какого дня недели начинается месяц
+            const daysInMonth = new Date(year, month + 1, 0).getDate(); // Определяем количество дней в месяце
+
+            calendarBody.innerHTML = ''; // Очищаем предыдущий календарь
 
             let row = document.createElement('tr');
-            let emptyCells = (firstDay + 6) % 7;
+            let emptyCells = (firstDay + 6) % 7; // Смещение дней недели, чтобы Пн был первым
 
+            // Добавляем пустые ячейки в начале месяца
             for (let i = 0; i < emptyCells; i++) {
                 let cell = document.createElement('td');
                 row.appendChild(cell);
             }
 
+            // Добавляем дни месяца
             for (let day = 1; day <= daysInMonth; day++) {
                 let cell = document.createElement('td');
                 cell.textContent = day;
 
-                if (highlightedDates.has(`${year}-${month}-${day}`)) {
+                // Проверяем, нужно ли выделить день
+                if (highlightedDates2.has(`${year}-${month}-${day}`)) {
                     cell.style.color = "green";
                     cell.style.backgroundColor = "lightgreen";
+                }
+                if (highlightedDates1.has(`${year}-${month}-${day}`)) {
+                    cell.style.color = "#FF8000";
+                    cell.style.backgroundColor = "orange";
                 }
 
                 row.appendChild(cell);
 
+                // Если неделя завершилась, начинаем новую строку
                 if ((emptyCells + day) % 7 === 0) {
                     calendarBody.appendChild(row);
                     row = document.createElement('tr');
                 }
             }
 
+            // Добавляем последнюю строку (если нужно)
             if (row.children.length > 0) {
                 calendarBody.appendChild(row);
             }
         }
 
-
+        // Отрисовать календарь при загрузке страницы
         document.addEventListener('DOMContentLoaded', function () {
             renderCalendar();
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxesIsCheck = document.querySelectorAll('.is_check');
+            const checkboxesCheckAgain = document.querySelectorAll('.check_again');
+            const isCheckIds = new Set();
+            const checkAgainIds = new Set();
+
+            document.getElementById("gooddownload").addEventListener("click", function() {
+                document.getElementById("showdownload").hidden=false;
+            }) 
+
+            checkboxesIsCheck.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const id = this.getAttribute('data-id');
+                    if (this.checked) {
+                        isCheckIds.add(id);
+                    } else {
+                        isCheckIds.delete(id);
+                    }
+                });
+            });
+
+            checkboxesCheckAgain.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const id = this.getAttribute('data-id');
+                    if (this.checked) {
+                        checkAgainIds.add(id);
+                    } else {
+                        checkAgainIds.delete(id);
+                    }
+                });
+            });
+
+            document.getElementById('saveForm').addEventListener('submit', function(e) {
+                const isCheckIdsInput = document.getElementById('is_check_ids');
+                const checkAgainIdsInput = document.getElementById('check_again_ids');
+                isCheckIdsInput.value = Array.from(isCheckIds).join(',');
+                checkAgainIdsInput.value = Array.from(checkAgainIds).join(',');
+            });
+
+        });
     </script>
+
 {% endblock %}
 
 {% block styles %}
 <style>
-    .calendar-controls {
-        margin-bottom: 15px;
-    }
-
-    .calendar-controls select, .calendar-controls input {
-        padding: 5px;
-        font-size: 1rem;
-        margin-right: 10px;
-    }
-
-    .calendar-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .calendar-table th, .calendar-table td {
-        width: 14.28%; 
-        padding: 10px;
-        text-align: center;
-        border: 1px solid #ddd;
-    }
-
-    .calendar-table td {
-        height: 50px;
-    }
-
-    .calendar-table th {
-        background-color: #5bc0de;
-        color: white;
-        font-weight: bold;
-    }
-
-    .calendar-table td:hover {
-        background-color: #f0f8ff;
-        cursor: pointer;
-    }
-
-    .calendar-table td:empty {
-        background-color: #f9f9f9;
-    }
     .btn-custom {
         background-color: #5bc0de;
         border-color: #46b8da;
@@ -362,6 +394,47 @@
 
     .addable {
         font-size: 12px;
+    }
+
+    .calendar-controls {
+        margin-bottom: 15px;
+    }
+
+    .calendar-controls select, .calendar-controls input {
+        padding: 5px;
+        font-size: 1rem;
+        margin-right: 10px;
+    }
+
+    .calendar-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .calendar-table th, .calendar-table td {
+        width: 14.28%; /* чтобы таблица делилась на 7 столбцов */
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #ddd;
+    }
+
+    .calendar-table td {
+        height: 50px;
+    }
+
+    .calendar-table th {
+        background-color: #5bc0de;
+        color: white;
+        font-weight: bold;
+    }
+
+    .calendar-table td:hover {
+        background-color: #f0f8ff;
+        cursor: pointer;
+    }
+
+    .calendar-table td:empty {
+        background-color: #f9f9f9;
     }
 </style>
 {% endblock %}

@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 from django.core.cache import cache
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 from .forms import FileForm, DateForm, ShablonForm, CheckBoxForm
 from .models import FileModel, DateModel, StatisticsModel, AgainShablonModel, DeleteShablonModel, UploadDataModel
@@ -41,7 +42,8 @@ class ParserView(TemplateView):
         if len(lastfile) != 0:
             # context["showdata"] = ShowDataModel.objects.filter(file_id=lastfile[0].pk)
             showdata = UploadDataModel.objects.filter(is_showing=True, status="GOOD")
-            context["date_in_parser"] = ','.join(list({date.date for date in UploadDataModel.objects.filter(status='NTH')}))
+            context["date_in_parser_with_nth_status"] = ','.join(list({date.date for date in UploadDataModel.objects.filter(status='NTH')}))
+            context["date_in_parser_already_parse"] = ','.join(list({date.date for date in UploadDataModel.objects.filter(~Q(status='NTH'))}))
             paginator = Paginator(showdata, 10)
             
             page_number = self.request.GET.get("page", None)
@@ -79,7 +81,7 @@ class ParserView(TemplateView):
                 if self.request.GET.get('again', None) == "True":
                     data = UploadDataModel.objects.filter(status="AGAIN")
                 else:
-                    data = UploadDataModel.objects.all()
+                    data = UploadDataModel.objects.filter(status="NTH")
                 
                 all_data = [eval(string.domain_for_parsing) for string in data]
                 data.delete()
@@ -119,13 +121,14 @@ class ParserView(TemplateView):
                                                     ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), is_showing=False, status="GOOD")
                     for row in data 
                 ]
-
+                print(data, bad_list, again_domain)
                 UploadDataModel.objects.bulk_create(upload)
 
                 upload = [
                     UploadDataModel(domain=row[1], date=row[0], domain_for_parsing = [row[0], row[1]], is_showing=False, status="AGAIN")
                     for row in again_domain
                 ]
+                print(upload)
                     # AgainDataModel.objects.create(domain=row)
                 UploadDataModel.objects.bulk_create(upload)
 
@@ -182,7 +185,7 @@ class ParserView(TemplateView):
         if self.request.POST.get("select") == "CHECK":
            again = AgainShablonModel.objects.create(code=self.request.POST.get("code"))
            again.save()
-           
+
         if self.request.POST.get("check_again_ids") != '' and not self.request.POST.get("check_again_ids") is None:
             for id_domain in self.request.POST.get("check_again_ids").split(","):
                 query_domain = UploadDataModel.objects.get(id=int(id_domain))
