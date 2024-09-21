@@ -81,7 +81,6 @@ class ParserView(TemplateView):
                     files = AgainDataModel.objects.all()
                     all_data = [eval(file.domain) for file in files]
                 else:
-                    print(f"{MEDIA_ROOT}/{files[0].file}")
                     files = FileModel.objects.all().order_by("-id")
                     print(f"{MEDIA_ROOT}/{files[0].file}")
                     all_data = data_from_file(f"{MEDIA_ROOT}/{files[0].file}")
