@@ -106,17 +106,13 @@ class ParserView(TemplateView):
                     bad += r["bad"]
                     data += [(i, r["data"][i]) for i in r["data"]]
                 
-                if self.request.GET.get('again', None):
-                    check_again = 0
-
                 StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, file=files[0]).save()
                 for row in data:
                     if any([row[1][r] != [] for r in row[1]]):
                         ShowDataModel.objects.create(domain=row[0], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
                                                     ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), file=files[0]).save()
-                if self.request.GET.get('start', None):
-                    for row in again_domain:
-                        AgainDataModel.objects.create(domain=row)
+                for row in again_domain:
+                    AgainDataModel.objects.create(domain=row)
                 
                 self._is_start_parser = False   
                 url_redirect = self.get_url()
