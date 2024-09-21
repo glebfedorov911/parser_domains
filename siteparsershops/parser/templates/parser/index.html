@@ -12,7 +12,7 @@
         <!-- Все блоки в один ряд с одинаковым размером и отступами -->
         <div class="row no-gutters d-flex justify-content-between">
             <div class="col-md-3 mb-3">
-                <div class="shadow p-4 bg-light rounded h-100 d-flex flex-column">
+                <div class="shadow p-4 bg-light rounded h-100 d-flex mr-4 flex-column">
                     <h2 class="mb-3 font-weight-bold">Загрузить файл</h2>
                     <form method="post" enctype="multipart/form-data" class="flex-grow-1">
                         {% csrf_token %}
@@ -25,7 +25,7 @@
             </div>
 
             <div class="col-md-3 mb-3">
-                <div class="shadow p-4 bg-light rounded h-100 d-flex flex-column">
+                <div class="shadow p-4 bg-light rounded h-100 d-flex mr-4 flex-column">
                     <h2 class="mb-3 font-weight-bold">Запуск парсера</h2>
                     <form action="{% url 'parser' %}" id="startparser" method="get" class="flex-grow-1">
                         {% csrf_token %}
@@ -37,7 +37,7 @@
             </div>
 
             <div class="col-md-3 mb-3">
-                <div class="shadow p-4 bg-light rounded h-100 d-flex flex-column">
+                <div class="shadow p-4 bg-light rounded h-100 mr-4 d-flex flex-column">
                     <h2 class="mb-3 font-weight-bold">Запуск проверки</h2>
                     <form action="{% url 'parser' %}" id="againparser" method="get" class="flex-grow-1">
                         {% csrf_token %}
@@ -49,7 +49,7 @@
             </div>
 
             <div class="col-md-3 mb-3">
-                <div class="shadow p-4 bg-light rounded h-100 d-flex flex-column">
+                <div class="shadow p-4 bg-light rounded h-100 mr-4 d-flex flex-column">
                     <h2 class="mb-3 font-weight-bold">Добавить код</h2>
                     <div class="flex-grow-1">
                         <button type="button" class="btn btn-custom btn-small w-100 mb-2" id="addcode">Добавить код</button>
