@@ -33,9 +33,11 @@ def find_phone(html: str):
     pat1 = r"(?<=[\s><:])\+[0-9]{9,15}(?=\s|$|>|<)"
     pat2 = r"(?<=[\s><:])\+\d{1,3} \d{3} \d{3}-\d{2}-\d{2}" 
     pat3 = r"(?<=[\s><:])8 \(\d{3}\) \d{3}-\d{2}-\d{2}"
+    pat6 = r"(?<=[\s><:])8 \(\d{3}\) \d{3} \d{2} \d{2}"
+    pat7 = r"(?<=[\s><:])+7 \(\d{3}\) \d{3} \d{2} \d{2}"
     pat4 = r"(?<=[\s><:])8\d{10}"
     pat5 = r"\+7\s?[0-9\s‑]{10,}"
-    return [res.replace("xa0", "") for res in (re.findall(pat1, html) + re.findall(pat2, html) + re.findall(pat3, html) + re.findall(pat4, html) + re.findall(pat5, html))]
+    return [res.replace("xa0", "") for res in (re.findall(pat1, html) + re.findall(pat2, html) + re.findall(pat3, html) + re.findall(pat4, html) + re.findall(pat5, html) + re.findall(pat6, html) + re.findall(pat7, html))]
 
 def find_inn(html: str):
     return re.findall(r"ИНН [a-zA-Z0-9.-«»]{10,12}(?=\s|$|>|<|»|«|,)", html)

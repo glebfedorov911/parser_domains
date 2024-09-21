@@ -42,7 +42,7 @@
                 <form action="{% url 'parser' %}" id="againparser" method="get" class="mb-4 shadow p-4 bg-light rounded">
                     {% csrf_token %}
                     <input type="hidden" name="again" id="again-param">
-                    <div id="pereparser" hidden>Перепарсинг запущен</div>
+                    <div id="pereparser" hidden>Перепроверка запущена</div>
                     <button type="submit" class="btn btn-custom btn-lg" onclick="setAgainParam()">Запустить проверку</button>
                 </form>
                 <h2 class="mb-3 font-weight-bold">Добавить код</h2>
