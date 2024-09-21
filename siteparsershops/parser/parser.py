@@ -14,7 +14,7 @@ from django.core.cache import cache
 #если бан от служб рф - удаление
 
 message = 1
-
+#
 # def data_from_file(filename: str) -> list:
 #     with open(filename, "r", newline="") as file:
 #         reader = csv.reader(file, delimiter=' ', quotechar="|")
