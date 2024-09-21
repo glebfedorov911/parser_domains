@@ -41,6 +41,7 @@ class ParserView(TemplateView):
         if len(lastfile) != 0:
             # context["showdata"] = ShowDataModel.objects.filter(file_id=lastfile[0].pk)
             showdata = UploadDataModel.objects.filter(is_showing=True, status="GOOD")
+            context["date_in_parser"] = ','.join(list({date.date for date in UploadDataModel.objects.filter(status='NTH')}))
             paginator = Paginator(showdata, 10)
             
             page_number = self.request.GET.get("page", None)

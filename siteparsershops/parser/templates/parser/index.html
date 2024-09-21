@@ -2,14 +2,47 @@
 
 {% block content %}
     <div class="container-fluid mt-5">
-        <!-- Блок с датой -->
         <div class="row mb-4">
             <div class="col-12 text-center">
-                <h3 class="font-weight-bold">Дата: {{ date.date }}</h3>
+                <h3 class="font-weight-bold mt-4">Календарь</h3>
+
+                <div class="calendar-controls mb-3">
+                    <select id="month-select" onchange="renderCalendar()">
+                        <option value="0">Январь</option>
+                        <option value="1">Февраль</option>
+                        <option value="2">Март</option>
+                        <option value="3">Апрель</option>
+                        <option value="4">Май</option>
+                        <option value="5">Июнь</option>
+                        <option value="6">Июль</option>
+                        <option value="7">Август</option>
+                        <option value="8">Сентябрь</option>
+                        <option value="9">Октябрь</option>
+                        <option value="10">Ноябрь</option>
+                        <option value="11">Декабрь</option>
+                    </select>
+
+                    <input type="number" id="year-input" value="{{ current_year }}" onchange="renderCalendar()">
+                </div>
+
+                <table class="calendar-table">
+                    <thead>
+                        <tr>
+                            <th>Пн</th>
+                            <th>Вт</th>
+                            <th>Ср</th>
+                            <th>Чт</th>
+                            <th>Пт</th>
+                            <th>Сб</th>
+                            <th>Вс</th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendar-body">
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Все блоки в один ряд с одинаковым размером и отступами -->
         <div class="row no-gutters d-flex justify-content-between">
             <div class="col-md-3 mb-3">
                 <div class="shadow p-4 bg-light rounded h-100 d-flex mr-4 flex-column">
@@ -19,7 +52,7 @@
                         <div class="form-group">
                             {{ form_file.as_p }}
                         </div>
-                        <button type="submit" class="btn btn-custom btn-small w-100">Загрузить файл</button>
+                        <button type="submit" id="gooddownload" class="btn btn-custom btn-small w-100">Загрузить файл</button>
                     </form>
                 </div>
             </div>
@@ -63,12 +96,11 @@
             </div>
         </div>
 
-        <!-- Таблица под блоками -->
         <div class="row no-gutters mt-4">
             <div class="col-12">
                 <h2 class="font-weight-bold">Результаты:</h2>
                 {% if stats.check_again or stats.bad or stats.good %}
-                    <div class="alert alert-info">Всего доменов: {{ stats.count_domains }} | Количество Shop/Store доменов: {{ stats.count_shop_store_domains }} | Успешно спаршено: {{ stats.good }}* | Не спрашено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}
+                    <div class="alert alert-info">Всего доменов: {{ stats.count_domains }} | Количество Shop/Store доменов: {{ stats.count_shop_store_domains }} | Успешно спаршено: {{ stats.good }}* | Не спаршено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}
                     <br><span class=addable>*веб страницы без данных не отображаются</span></div>
                 {% endif %}
 
@@ -91,7 +123,7 @@
                             {% for data in showdata %}
                                 {% if data.is_showing %}
                                     <tr>
-                                        <td><a href=http://{{ data.domain }}>{{ data.domain }}</a></td>
+                                        <td><a href="http://{{ data.domain }}">{{ data.domain }}</a></td>
                                         <td>{{ data.phone }}</td>
                                         <td>{{ data.email }}</td>
                                         <td>{{ data.inn }}</td>
@@ -153,47 +185,109 @@
             addShablonForm.hidden = !addShablonForm.hidden;
         });
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkboxesIsCheck = document.querySelectorAll('.is_check');
-            const checkboxesCheckAgain = document.querySelectorAll('.check_again');
-            const isCheckIds = new Set();
-            const checkAgainIds = new Set();
+        function renderCalendar() {
+            const monthSelect = document.getElementById('month-select');
+            const yearInput = document.getElementById('year-input');
+            const calendarBody = document.getElementById('calendar-body');
 
-            checkboxesIsCheck.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const id = this.getAttribute('data-id');
-                    if (this.checked) {
-                        isCheckIds.add(id);
-                    } else {
-                        isCheckIds.delete(id);
-                    }
-                });
+            const month = parseInt(monthSelect.value);
+            const year = parseInt(yearInput.value);
+
+            const dates = `{{ date_in_parser }}`.split(',').map(date => {
+                if (/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+                    const [day, month, year] = date.split(".");
+                    return new Date(`${year}-${month}-${day}`); 
+                }
+                return new Date(date);
             });
 
-            checkboxesCheckAgain.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const id = this.getAttribute('data-id');
-                    if (this.checked) {
-                        checkAgainIds.add(id);
-                    } else {
-                        checkAgainIds.delete(id);
-                    }
-                });
-            });
+            
+            const highlightedDates = new Set(dates.map(date => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`));
 
-            document.getElementById('saveForm').addEventListener('submit', function(e) {
-                const isCheckIdsInput = document.getElementById('is_check_ids');
-                const checkAgainIdsInput = document.getElementById('check_again_ids');
-                isCheckIdsInput.value = Array.from(isCheckIds).join(',');
-                checkAgainIdsInput.value = Array.from(checkAgainIds).join(',');
-            });
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            calendarBody.innerHTML = '';
+
+            let row = document.createElement('tr');
+            let emptyCells = (firstDay + 6) % 7;
+
+            for (let i = 0; i < emptyCells; i++) {
+                let cell = document.createElement('td');
+                row.appendChild(cell);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                let cell = document.createElement('td');
+                cell.textContent = day;
+
+                if (highlightedDates.has(`${year}-${month}-${day}`)) {
+                    cell.style.color = "green";
+                    cell.style.backgroundColor = "lightgreen";
+                }
+
+                row.appendChild(cell);
+
+                if ((emptyCells + day) % 7 === 0) {
+                    calendarBody.appendChild(row);
+                    row = document.createElement('tr');
+                }
+            }
+
+            if (row.children.length > 0) {
+                calendarBody.appendChild(row);
+            }
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            renderCalendar();
         });
     </script>
-
 {% endblock %}
 
 {% block styles %}
 <style>
+    .calendar-controls {
+        margin-bottom: 15px;
+    }
+
+    .calendar-controls select, .calendar-controls input {
+        padding: 5px;
+        font-size: 1rem;
+        margin-right: 10px;
+    }
+
+    .calendar-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .calendar-table th, .calendar-table td {
+        width: 14.28%; 
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #ddd;
+    }
+
+    .calendar-table td {
+        height: 50px;
+    }
+
+    .calendar-table th {
+        background-color: #5bc0de;
+        color: white;
+        font-weight: bold;
+    }
+
+    .calendar-table td:hover {
+        background-color: #f0f8ff;
+        cursor: pointer;
+    }
+
+    .calendar-table td:empty {
+        background-color: #f9f9f9;
+    }
     .btn-custom {
         background-color: #5bc0de;
         border-color: #46b8da;
