@@ -7,7 +7,7 @@ from django.core.cache import cache
 from django.core.paginator import Paginator
 
 from .forms import FileForm, DateForm, ShablonForm, CheckBoxForm
-from .models import FileModel, DateModel, StatisticsModel, ShowDataModel, AgainDataModel, AgainShablonModel, DeleteShablonModel
+from .models import FileModel, DateModel, StatisticsModel, AgainShablonModel, DeleteShablonModel, UploadDataModel
 from .parser import parser, data_from_file, split_file
 from siteparsershops.settings import MEDIA_ROOT
 
@@ -40,7 +40,7 @@ class ParserView(TemplateView):
         context["date"] = lastdate[0] if len(lastdate) != 0 else ""
         if len(lastfile) != 0:
             # context["showdata"] = ShowDataModel.objects.filter(file_id=lastfile[0].pk)
-            showdata = ShowDataModel.objects.filter(file_id=lastfile[0].pk, is_showing=True)
+            showdata = UploadDataModel.objects.filter(is_showing=True, status="GOOD")
             paginator = Paginator(showdata, 10)
             
             page_number = self.request.GET.get("page", None)
@@ -48,7 +48,7 @@ class ParserView(TemplateView):
 
             context["showdata"] = page_obj
             
-            stats = StatisticsModel.objects.filter(file_id=lastfile[0].pk).order_by("-id")
+            stats = StatisticsModel.objects.filter().order_by("-id")
             if stats:
                 context["stats"] = stats[0]
 
@@ -76,11 +76,14 @@ class ParserView(TemplateView):
         if (self.request.GET.get('start', None) == "True" or self.request.GET.get('again', None) == "True") and not self._is_start_parser:
             try:
                 if self.request.GET.get('again', None) == "True":
-                    files = AgainDataModel.objects.all()
-                    all_data = [eval(file.domain) for file in files]
+                    data = UploadDataModel.objects.filter(status="AGAIN")
                 else:
-                    files = FileModel.objects.all().order_by("-id")
-                    all_data = data_from_file(f"{MEDIA_ROOT}/{files[0].file}")
+                    data = UploadDataModel.objects.all()
+                
+                all_data = [eval(string.domain_for_parsing) for string in data]
+                data.delete()
+
+
                 delete = [delete.code for delete in DeleteShablonModel.objects.all()]
                 shablon = [again.code for again in AgainShablonModel.objects.all()]
 
@@ -94,9 +97,10 @@ class ParserView(TemplateView):
                 good = bad = check_again = count_shop_store_domains = 0
                 again_domain = []
                 data = []
+                bad_list = []
                 if self.request.GET.get('again', None) == "True":
-                    files = AgainDataModel.objects.all().delete()
-                    files = FileModel.objects.all().order_by("-id")
+                    UploadDataModel.objects.filter(status="AGAIN").delete()
+
                 for r in res:
                     again_domain += r["again_domain"]
                     good += r["good"]
@@ -104,18 +108,33 @@ class ParserView(TemplateView):
                     bad += r["bad"]
                     count_shop_store_domains += r["count_shop_store_domains"]
                     data += [(i, r["data"][i]) for i in r["data"]]
-                StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, count_shop_store_domains=count_shop_store_domains, count_domains=count_all_domains,
-                                                 file=files[0]).save()
-                for row in data:
-                    if any([row[1][r] != [] for r in row[1]]):
-                        ShowDataModel.objects.create(domain=row[0], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
-                                                    ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), is_showing=True, file=files[0]).save()
-                    else:
-                        ShowDataModel.objects.create(domain=row[0], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
-                                                    ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), is_showing=False, file=files[0]).save()
-                for row in again_domain:
-                    AgainDataModel.objects.create(domain=row)
-                
+                    bad_list += r["bad_list"]
+                StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, count_shop_store_domains=count_shop_store_domains, count_domains=count_all_domains).save()
+                upload = [
+                    UploadDataModel(domain=row[0], date=row[1]["date"], domain_for_parsing = [row[1]["date"], row[0]], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
+                                                    ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), is_showing=True, status="GOOD")
+                    if any([row[1][r] != [] for r in row[1] if r != "date"]) else 
+                    UploadDataModel(domain=row[0], date=row[1]["date"], domain_for_parsing = [row[1]["date"], row[0]], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
+                                                    ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), is_showing=False, status="GOOD")
+                    for row in data 
+                ]
+
+                UploadDataModel.objects.bulk_create(upload)
+
+                upload = [
+                    UploadDataModel(domain=row[1], date=row[0], domain_for_parsing = [row[0], row[1]], is_showing=False, status="AGAIN")
+                    for row in again_domain
+                ]
+                    # AgainDataModel.objects.create(domain=row)
+                UploadDataModel.objects.bulk_create(upload)
+
+                upload = [
+                    UploadDataModel(domain=row[1], date=row[0], domain_for_parsing = [row[0], row[1]], is_showing=False, status="BAD")
+                    for row in bad_list
+                ]
+                UploadDataModel.objects.bulk_create(upload)
+
+
                 self._is_start_parser = False   
                 
                 url_redirect = self.get_url()
@@ -136,6 +155,14 @@ class ParserView(TemplateView):
             save_data.save()
 
             all_data = data_from_file(f"{MEDIA_ROOT}/{save_data.file}")
+
+            domains = [
+                UploadDataModel(date=row[0], domain_for_parsing=row, domain=row[1], status="NTH")
+                for row in all_data
+            ]
+
+            UploadDataModel.objects.bulk_create(domains)
+
             date = f"{all_data[0][0]}-{all_data[-1][0]}"
             save_data = DateModel.objects.create(date=date)
             save_data.save()
@@ -157,15 +184,18 @@ class ParserView(TemplateView):
            
         if self.request.POST.get("check_again_ids") != '' and not self.request.POST.get("check_again_ids") is None:
             for id_domain in self.request.POST.get("check_again_ids").split(","):
-                query_domain = ShowDataModel.objects.get(id=int(id_domain))
-                domain = ["", query_domain.domain]
-                query_domain.delete()
-                AgainDataModel.objects.create(domain=domain).save()
+                query_domain = UploadDataModel.objects.get(id=int(id_domain))
+                # domain = ["", query_domain.domain]
+                query_domain.status = "AGAIN"
+                query_domain.save()
+                # query_domain.delete()
+                # AgainDataModel.objects.create(domain=domain).save()
 
         if self.request.POST.get("is_check_ids") != '' and not self.request.POST.get("is_check_ids") is None:
             for id_domain in self.request.POST.get("is_check_ids").split(","):
                 try:
-                    show = ShowDataModel.objects.get(id=int(id_domain))
+                    # show = ShowDataModel.objects.get(id=int(id_domain))
+                    show = UploadDataModel.objects.get(id=int(id_domain))
                     show.is_showing = False
                     show.save()
                 except:

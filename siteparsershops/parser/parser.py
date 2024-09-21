@@ -175,10 +175,12 @@ def parser(all_data: list, shared, index, delete, shablon):
     check_again = 0
     count_shop_store_domains = 0
     again_domain = []
+    bad_list = []
     data = {}
     
     for src in all_data:
         if not ("shop" in src[1].lower() or "store" in src[1].lower()):
+            bad_list.append(src)
             print("skip")
             continue
         count_shop_store_domains += 1
@@ -188,12 +190,14 @@ def parser(all_data: list, shared, index, delete, shablon):
         except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
             requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL) as e:
             # print(e, src)
+            bad_list.append(src)
             bad += 1
             continue
         
         # if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in delete]):
         if any([re.sub(r'\s+', '', i) in re.sub(r'\s+', '', req.text) for i in delete]):
             # print("ОШИБКА", src)
+            bad_list.append(src)
             bad += 1
             continue
         
@@ -210,6 +214,7 @@ def parser(all_data: list, shared, index, delete, shablon):
         data[src[1]]["ooo"] = find_ooo(req.text)
         data[src[1]]["individual"] = find_individual(req.text)
         data[src[1]]["domain"] = find_urls(req.text, req.url)
+        data[src[1]]["date"] = src[0]
         good += 1
         for under_src in data[src[1]]["domain"]:
             try:
@@ -220,12 +225,14 @@ def parser(all_data: list, shared, index, delete, shablon):
                 data[src[1]]["inn"] += find_inn(under_req.text)
                 data[src[1]]["ooo"] += find_ooo(under_req.text)
                 data[src[1]]["individual"] += find_individual(under_req.text)
+                data[src[1]]["date"] = src[0]
             except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
             requests.exceptions.InvalidSchema, requests.exceptions.ContentDecodingError, requests.exceptions.InvalidURL) as e:
                 # print("ОШИБКА", src, e)
                 continue
         unique(data, src)
-    shared[index] = {"data": data, "good": good, "bad": bad, "check_again": check_again, "again_domain": again_domain, "count_shop_store_domains": count_shop_store_domains}
+    shared[index] = {"data": data, "good": good, "bad": bad, "check_again": check_again, "again_domain": again_domain, "count_shop_store_domains": count_shop_store_domains,
+                    "bad_list": bad_list}
 
 def split_file(nums: int, data: list):
     start = 0

@@ -1,5 +1,5 @@
 from django import forms
-from .models import FileModel, DateModel, ShowDataModel
+from .models import FileModel, DateModel, UploadDataModel
 
 
 class FileForm(forms.ModelForm):
@@ -28,5 +28,5 @@ class CheckBoxForm(forms.ModelForm):
     is_check = forms.BooleanField(label="", required=False)
 
     class Meta:
-        model = ShowDataModel
+        model = UploadDataModel
         fields = ("is_check", )

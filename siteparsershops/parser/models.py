@@ -19,9 +19,18 @@ class StatisticsModel(models.Model):
     check_again = models.IntegerField(null=False)
     count_domains = models.IntegerField(null=False)
     count_shop_store_domains = models.IntegerField(null=False)
-    file = models.ForeignKey(FileModel, null=True, unique=False, on_delete=models.SET_NULL)
 
-class ShowDataModel(models.Model):
+
+class UploadDataModel(models.Model):
+    CHOICES = (
+        ("GOOD", "Успешно спаршено"),
+        ("BAD", "Невозможно спрасить"),
+        ("AGAIN", "Отправлено на перепроверку"),
+        ("NTH", "Файл пока что только загружен"),
+    )
+
+    date = models.TextField(null=False)
+    domain_for_parsing = models.TextField(null=False)
     domain = models.TextField(null=False)
     phone = models.CharField(max_length=20, null=True)
     email = models.EmailField(null=True)
@@ -30,7 +39,7 @@ class ShowDataModel(models.Model):
     ip = models.TextField(null=True)
     is_check = models.BooleanField(default=False, null=True)
     is_showing = models.BooleanField(default=False, null=True)
-    file = models.ForeignKey(FileModel, null=True, unique=False, on_delete=models.SET_NULL)
+    status = models.CharField(max_length=5, null=True, choices=CHOICES)
 
-class AgainDataModel(models.Model):
-    domain = models.TextField(null=False)
+# class AgainDataModel(models.Model):
+#     domain = models.TextField(null=False)
