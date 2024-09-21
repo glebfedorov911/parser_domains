@@ -112,6 +112,7 @@ class ParserView(TemplateView):
                         ShowDataModel.objects.create(domain=row[0], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
                                                     ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), file=files[0]).save()
                 if not (self.request.GET.get('again') == "True"):
+                    print('11)')
                     for row in again_domain:
                         AgainDataModel.objects.create(domain=row)
                 
