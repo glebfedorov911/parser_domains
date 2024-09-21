@@ -21,7 +21,7 @@ message = 1
 #         return [row[0].split(";")[:-1] for row in list(reader)[1:] if row[0].split(";")[:-1][0] == "2024-07-15"]
 
 def data_from_file(filename: str) -> list:
-    with open(filename, "r", newline="", encoding='UTF-8') as file:
+    with open(filename, "r", newline="", encoding='latin-1') as file:
         reader = csv.reader(file)
         result = [row[0].split(';')[:-1] if len(row[0].split(';')) == 3 else row[0].split(';') for row in reader if row[0] != ";"]
         return result[1:]
