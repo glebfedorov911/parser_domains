@@ -90,15 +90,13 @@ ASGI_APPLICATION = 'siteparsershops.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        "NAME": os.getenv("NAME"),
-        "USER": os.getenv("USER"),
-        "PASSWORD": os.getenv("PASSWORD"),
+        "NAME": "parser_1",
+        "USER": "postgres",
+        "PASSWORD": "MYZ854VWYZ8678",
         "HOST": "domains-db-ebeea1",
-        "PORT": os.getenv("PORT"),
+        "PORT": 5432,
     }
 }
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
