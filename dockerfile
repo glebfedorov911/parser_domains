@@ -23,5 +23,8 @@ ENV PYTHONUNBUFFERED=1 \
 # Открываем порт для приложения
 EXPOSE 8000
 
-# Применяем миграции и запускаем приложение через Uvicorn
-CMD ["sh", "-c", "./venv/bin/python manage.py migrate && ./venv/bin/python -m uvicorn siteparsershops.asgi:application --host 0.0.0.0 --port 8000"]
+# Команда для запуска миграций, создания суперпользователя и запуска приложения через Uvicorn
+CMD ["sh", "-c", \
+    "./venv/bin/python manage.py migrate && \
+    echo \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'email@mail.ru', 'MYZ854VWYZ8678z')\" | ./venv/bin/python manage.py shell || true && \
+    ./venv/bin/python -m uvicorn siteparsershops.asgi:application --host 0.0.0.0 --port 8000"]
