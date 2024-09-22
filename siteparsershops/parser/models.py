@@ -14,11 +14,17 @@ class FileModel(models.Model):
     file = models.FileField(upload_to="uploads/%Y/%m/%d/")
 
 class StatisticsModel(models.Model):
+    CHOICES = (
+        ("FULL", "Последняя фулл проверка"),
+        ("AGAINDATA", "Последняя перепроверка"),
+    )
+
     good = models.IntegerField(null=False)
     bad = models.IntegerField(null=False)
     check_again = models.IntegerField(null=False)
     count_domains = models.IntegerField(null=False)
     count_shop_store_domains = models.IntegerField(null=False)
+    status = models.CharField(max_length=9, null=True, choices=CHOICES)
 
 
 class UploadDataModel(models.Model):
@@ -32,9 +38,9 @@ class UploadDataModel(models.Model):
     date = models.TextField(null=False)
     domain_for_parsing = models.TextField(null=False)
     domain = models.TextField(null=False)
-    phone = models.CharField(max_length=20, null=True)
+    phone = models.TextField(null=True)
     email = models.EmailField(null=True)
-    inn = models.CharField(max_length=15, null=True)
+    inn = models.TextField(null=True)
     ooo = models.TextField(null=True)
     ip = models.TextField(null=True)
     is_check = models.BooleanField(default=False, null=True)

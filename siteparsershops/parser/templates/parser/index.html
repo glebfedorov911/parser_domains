@@ -26,7 +26,7 @@
                     <input type="number" id="year-input" value="{{ current_year }}" onchange="renderCalendar()">
                 </div>
 
-                <table class="calendar-table">
+                <table class="calendar-table" id="days_of_week" hidden>
                     <thead>
                         <tr>
                             <th>Пн</th>
@@ -53,6 +53,7 @@
                         <div class="form-group">
                             {{ form_file.as_p }}
                         </div>
+                        <div hidden id="showdownload">Файл загружается</div>
                         <button type="submit" id="gooddownload" class="btn btn-custom btn-small w-100">Загрузить файл</button>
                     </form>
                 </div>
@@ -100,8 +101,12 @@
         <div class="row no-gutters mt-4">
             <div class="col-12">
                 <h2 class="font-weight-bold">Результаты:</h2>
-                {% if stats.check_again or stats.bad or stats.good %}
-                    <div class="alert alert-info">Всего доменов: {{ stats.count_domains }} | Количество Shop/Store доменов: {{ stats.count_shop_store_domains }} | Успешно спаршено: {{ stats.good }}* | Не спрашено: {{ stats.bad }} | Отправлено на перепроверку: {{ stats.check_again }}
+                {% if stats_full.check_again or stats_full.bad or stats_full.good %}
+                    <div class="alert alert-info">Парсинг<br>Всего доменов: {{ stats_full.count_domains }} | Количество Shop/Store доменов: {{ stats_full.count_shop_store_domains }} | Успешно спаршено: {{ stats_full.good }}* | Не спрашено: {{ stats_full.bad }} | Отправлено на перепроверку: {{ stats_full.check_again }}
+                    <br><span class=addable>*веб страницы без данных не отображаются</span></div>
+                {% endif %}
+                {% if stats_again.check_again or stats_again.bad or stats_again.good %}
+                    <div class="alert alert-info">Перепроверка<br>Всего доменов: {{ stats_again.count_domains }} | Количество Shop/Store доменов: {{ stats_again.count_shop_store_domains }} | Успешно спаршено: {{ stats_again.good }}* | Не спрашено: {{ stats_again.bad }} | Отправлено на перепроверку: {{ stats_again.check_again }}
                     <br><span class=addable>*веб страницы без данных не отображаются</span></div>
                 {% endif %}
 
@@ -124,7 +129,7 @@
                             {% for data in showdata %}
                                 {% if data.is_showing %}
                                     <tr>
-                                        <td><a href=http://{{ data.domain }}>{{ data.domain }}</a></td>
+                                        <td><a href=http://{{ data.domain }} target="_blank">{{ data.domain }}</a></td>
                                         <td>{{ data.phone }}</td>
                                         <td>{{ data.email }}</td>
                                         <td>{{ data.inn }}</td>
@@ -189,6 +194,7 @@
         function renderCalendar() {
             const monthSelect = document.getElementById('month-select');
             const yearInput = document.getElementById('year-input');
+            document.getElementById('days_of_week').hidden = yearInput.value != '' ? false : true
             const calendarBody = document.getElementById('calendar-body');
 
             const month = parseInt(monthSelect.value);
@@ -418,6 +424,10 @@
 
     .calendar-table td:empty {
         background-color: #f9f9f9;
+    }
+
+    .hide {
+        display: None;
     }
 </style>
 {% endblock %}

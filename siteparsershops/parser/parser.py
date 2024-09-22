@@ -75,17 +75,21 @@ def find_urls(html: str, url: str):
         elif not "http" in hrefs[idx]:
             if hrefs[idx] != '':
                 if url[-1] == hrefs[idx][0] == "/":
+                    uri = url + hrefs[idx][1:]
                     final_hrefs.append(url + hrefs[idx][1:])
                 else:
+                    uri = url + hrefs[idx]
                     final_hrefs.append(url + hrefs[idx])
             else:
+                uri = url + hrefs[idx]
                 final_hrefs.append(url + hrefs[idx])
         else:
+            uri = hrefs[idx]
             final_hrefs.append(hrefs[idx])
 
-        if hrefs[idx][:-1].count('/') >= 4:
-            if hrefs[idx] in final_hrefs:
-                final_hrefs.remove(hrefs[idx])
+        if uri.count('/') >= 4 or "?" in uri:
+            if uri in final_hrefs:
+                final_hrefs.remove(uri)
 
     return list(set(final_hrefs))
 

@@ -38,22 +38,26 @@ class ParserView(TemplateView):
         context["form_date"] = self.form_date
         context["form_shablon"] = self.form_shablon
         context["form_checkbox"] = self.form_checkbox
+        context["is_start_parser"] = self._is_start_parser
         context["date"] = lastdate[0] if len(lastdate) != 0 else ""
         if len(lastfile) != 0:
             # context["showdata"] = ShowDataModel.objects.filter(file_id=lastfile[0].pk)
             showdata = UploadDataModel.objects.filter(is_showing=True, status="GOOD")
             context["date_in_parser_with_nth_status"] = ','.join(list({date.date for date in UploadDataModel.objects.filter(status='NTH')}))
             context["date_in_parser_already_parse"] = ','.join(list({date.date for date in UploadDataModel.objects.filter(~Q(status='NTH'))}))
-            paginator = Paginator(showdata, 10)
+            paginator = Paginator(showdata, 50)
             
             page_number = self.request.GET.get("page", None)
             page_obj = paginator.get_page(page_number)
 
             context["showdata"] = page_obj
             
-            stats = StatisticsModel.objects.filter().order_by("-id")
-            if stats:
-                context["stats"] = stats[0]
+            stats_full = StatisticsModel.objects.filter(status="FULL").order_by("-id")
+            stats_again = StatisticsModel.objects.filter(status="AGAINDATA").order_by("-id")
+            if stats_full:
+                context["stats_full"] = stats_full[0]
+            if stats_again:
+                context["stats_again"] = stats_again[0]
 
         return context
 
@@ -84,7 +88,6 @@ class ParserView(TemplateView):
                     data = UploadDataModel.objects.filter(status="NTH")
                 
                 all_data = [eval(string.domain_for_parsing) for string in data]
-                data.delete()
 
 
                 delete = [delete.code for delete in DeleteShablonModel.objects.all()]
@@ -97,6 +100,7 @@ class ParserView(TemplateView):
                 else:
                     all_data = split_file(16, all_data)
                 res = self.start_parser(all_data, delete, shablon)
+                data.delete()
                 good = bad = check_again = count_shop_store_domains = 0
                 again_domain = []
                 data = []
@@ -112,7 +116,13 @@ class ParserView(TemplateView):
                     count_shop_store_domains += r["count_shop_store_domains"]
                     data += [(i, r["data"][i]) for i in r["data"]]
                     bad_list += r["bad_list"]
-                StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, count_shop_store_domains=count_shop_store_domains, count_domains=count_all_domains).save()
+
+                if self.request.GET.get('again', None) == "True":
+                    StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, count_shop_store_domains=count_shop_store_domains, 
+                        count_domains=count_all_domains, status="AGAINDATA").save()
+                else:
+                    StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, count_shop_store_domains=count_shop_store_domains, 
+                        count_domains=count_all_domains, status="FULL").save()
                 upload = [
                     UploadDataModel(domain=row[0], date=row[1]["date"], domain_for_parsing = [row[1]["date"], row[0]], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
                                                     ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), is_showing=True, status="GOOD")
@@ -121,14 +131,12 @@ class ParserView(TemplateView):
                                                     ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), is_showing=False, status="GOOD")
                     for row in data 
                 ]
-                print(data, bad_list, again_domain)
                 UploadDataModel.objects.bulk_create(upload)
 
                 upload = [
                     UploadDataModel(domain=row[1], date=row[0], domain_for_parsing = [row[0], row[1]], is_showing=False, status="AGAIN")
                     for row in again_domain
                 ]
-                print(upload)
                     # AgainDataModel.objects.create(domain=row)
                 UploadDataModel.objects.bulk_create(upload)
 
