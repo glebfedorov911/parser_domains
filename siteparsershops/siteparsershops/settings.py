@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 
 import os
+import dj_database_url
 
 from dotenv import load_dotenv
 
@@ -88,14 +89,9 @@ ASGI_APPLICATION = 'siteparsershops.asgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        "NAME": "parser_1",
-        "USER": "postgres",
-        "PASSWORD": "MYZ854VWYZ8678",
-        "HOST": "domains-db-ebeea1",
-        "PORT": 5432,
-    }
+    'default': dj_database_url.config(
+        default='postgresql://postgres:MYZ854VWYZ8678@domains-db-ebeea1:5432/parser_1'
+    )
 }
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
