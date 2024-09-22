@@ -2,15 +2,11 @@
 
 {% block content %}
     <div class="container-fluid mt-5">
-        <!-- Блок с датой и календарем -->
         <div class="row mb-4">
             <div class="col-12 text-center">
-                <h3 class="font-weight-bold">Дата: {{ date_in_parser }}</h3>
                 
-                <!-- Блок с календарем -->
                 <h3 class="font-weight-bold mt-4">Календарь</h3>
 
-                <!-- Выбор месяца и года -->
                 <div class="calendar-controls mb-3">
                     <select id="month-select" onchange="renderCalendar()">
                         <option value="0">Январь</option>
@@ -30,7 +26,6 @@
                     <input type="number" id="year-input" value="{{ current_year }}" onchange="renderCalendar()">
                 </div>
 
-                <!-- Таблица календаря -->
                 <table class="calendar-table">
                     <thead>
                         <tr>
@@ -44,13 +39,11 @@
                         </tr>
                     </thead>
                     <tbody id="calendar-body">
-                        <!-- Дни месяца будут отрисованы здесь с помощью JavaScript -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Все блоки в один ряд с одинаковым размером и отступами -->
         <div class="row no-gutters d-flex justify-content-between">
             <div class="col-md-3 mb-3">
                 <div class="shadow p-4 bg-light rounded h-100 d-flex mr-4 flex-column">
@@ -104,7 +97,6 @@
             </div>
         </div>
 
-        <!-- Таблица под блоками -->
         <div class="row no-gutters mt-4">
             <div class="col-12">
                 <h2 class="font-weight-bold">Результаты:</h2>
@@ -194,7 +186,6 @@
             addShablonForm.hidden = !addShablonForm.hidden;
         });
 
-        // Функция для отрисовки календаря
         function renderCalendar() {
             const monthSelect = document.getElementById('month-select');
             const yearInput = document.getElementById('year-input');
@@ -203,48 +194,43 @@
             const month = parseInt(monthSelect.value);
             const year = parseInt(yearInput.value);
 
-            // Получаем массив выделенных дат
             
             const dates1 = `{{ date_in_parser_with_nth_status }}`.split(',').map(date => {
                 if (/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
                     const [day, month, year] = date.split(".");
-                    return new Date(`${year}-${month}-${day}`); // Преобразуем в формат YYYY-MM-DD
+                    return new Date(`${year}-${month}-${day}`); 
                 }
-                return new Date(date); // Возвращаем как есть, если уже в формате YYYY-MM-DD
+                return new Date(date);
             });
 
             const dates2 = `{{ date_in_parser_already_parse }}`.split(',').map(date => {
                 if (/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
                     const [day, month, year] = date.split(".");
-                    return new Date(`${year}-${month}-${day}`); // Преобразуем в формат YYYY-MM-DD
+                    return new Date(`${year}-${month}-${day}`);
                 }
-                return new Date(date); // Возвращаем как есть, если уже в формате YYYY-MM-DD
+                return new Date(date);
             });
 
-            // Сохраняем выделенные даты в формате "YYYY-MM-DD"
             const highlightedDates1 = new Set(dates1.map(date => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`));
             const highlightedDates2 = new Set(dates2.map(date => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`));
 
-            const firstDay = new Date(year, month, 1).getDay(); // Определяем, с какого дня недели начинается месяц
-            const daysInMonth = new Date(year, month + 1, 0).getDate(); // Определяем количество дней в месяце
+            const firstDay = new Date(year, month, 1).getDay(); 
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            calendarBody.innerHTML = ''; // Очищаем предыдущий календарь
+            calendarBody.innerHTML = '';
 
             let row = document.createElement('tr');
-            let emptyCells = (firstDay + 6) % 7; // Смещение дней недели, чтобы Пн был первым
+            let emptyCells = (firstDay + 6) % 7; 
 
-            // Добавляем пустые ячейки в начале месяца
             for (let i = 0; i < emptyCells; i++) {
                 let cell = document.createElement('td');
                 row.appendChild(cell);
             }
 
-            // Добавляем дни месяца
             for (let day = 1; day <= daysInMonth; day++) {
                 let cell = document.createElement('td');
                 cell.textContent = day;
 
-                // Проверяем, нужно ли выделить день
                 if (highlightedDates2.has(`${year}-${month}-${day}`)) {
                     cell.style.color = "green";
                     cell.style.backgroundColor = "lightgreen";
@@ -256,20 +242,17 @@
 
                 row.appendChild(cell);
 
-                // Если неделя завершилась, начинаем новую строку
                 if ((emptyCells + day) % 7 === 0) {
                     calendarBody.appendChild(row);
                     row = document.createElement('tr');
                 }
             }
 
-            // Добавляем последнюю строку (если нужно)
             if (row.children.length > 0) {
                 calendarBody.appendChild(row);
             }
         }
 
-        // Отрисовать календарь при загрузке страницы
         document.addEventListener('DOMContentLoaded', function () {
             renderCalendar();
         });
@@ -412,7 +395,7 @@
     }
 
     .calendar-table th, .calendar-table td {
-        width: 14.28%; /* чтобы таблица делилась на 7 столбцов */
+        width: 14.28%; 
         padding: 10px;
         text-align: center;
         border: 1px solid #ddd;
