@@ -47,5 +47,8 @@ class UploadDataModel(models.Model):
     is_showing = models.BooleanField(default=False, null=True)
     status = models.CharField(max_length=5, null=True, choices=CHOICES)
 
+    def __str__(self):
+        return self.domain
+
 # class AgainDataModel(models.Model):
 #     domain = models.TextField(null=False)
