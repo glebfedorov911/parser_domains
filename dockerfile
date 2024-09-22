@@ -20,12 +20,8 @@ ENV PYTHONUNBUFFERED=1 \
     HOST=0.0.0.0 \
     PYTHONPATH=/app
 
-# Применяем миграции с активированным виртуальным окружением
-RUN ./venv/bin/python manage.py makemigrations && \
-    ./venv/bin/python manage.py migrate
-
 # Открываем порт для приложения
 EXPOSE 8000
 
-# Запускаем приложение через Uvicorn
-CMD ["sh", "-c", "PYTHONPATH=/app ./venv/bin/python -m uvicorn siteparsershops.asgi:application --host 0.0.0.0 --port 8000"]
+# Применяем миграции и запускаем приложение через Uvicorn
+CMD ["sh", "-c", "./venv/bin/python manage.py migrate && ./venv/bin/python -m uvicorn siteparsershops.asgi:application --host 0.0.0.0 --port 8000"]
