@@ -90,7 +90,7 @@ ASGI_APPLICATION = 'siteparsershops.asgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=f'postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'
+        default=f'postgresql://{os.getenv("USER")}:{os.getenv("PASSWORD")}@{os.getenv("HOST")}:{os.getenv("PORT")}/{os.getenv("NAME")}'
     )
 }
 # Password validation
