@@ -39,7 +39,7 @@ class UploadDataModel(models.Model):
     domain_for_parsing = models.TextField(null=False)
     domain = models.TextField(null=False)
     phone = models.TextField(null=True)
-    email = models.EmailField(null=True)
+    email = models.TextField(null=True)
     inn = models.TextField(null=True)
     ooo = models.TextField(null=True)
     ip = models.TextField(null=True)

@@ -80,15 +80,16 @@ class ParserView(TemplateView):
         return url_redirect
 
     def get(self, request):
-        if (self.request.GET.get('start', None) == "True" or self.request.GET.get('again', None) == "True") and not self._is_start_parser:
+        if (self.request.GET.get('start', None) == "True" or self.request.GET.get('again', None) == "True" or self.request.GET.get('check_good_again', None) == "True") and not self._is_start_parser:
             try:
                 if self.request.GET.get('again', None) == "True":
                     data = UploadDataModel.objects.filter(status="AGAIN")
+                elif self.request.GET.get('check_good_again', None) == "True":
+                    data = UploadDataModel.objects.filter(status="GOOD", is_showing=True)
                 else:
                     data = UploadDataModel.objects.filter(status="NTH")
                 
                 all_data = [eval(string.domain_for_parsing) for string in data]
-
 
                 delete = [delete.code for delete in DeleteShablonModel.objects.all()]
                 shablon = [again.code for again in AgainShablonModel.objects.all()]
@@ -107,6 +108,8 @@ class ParserView(TemplateView):
                 bad_list = []
                 if self.request.GET.get('again', None) == "True":
                     UploadDataModel.objects.filter(status="AGAIN").delete()
+                elif self.request.GET.get('check_good_again', None) == "True":
+                    UploadDataModel.objects.filter(status="GOOD", is_showing=True).delete()
 
                 for r in res:
                     again_domain += r["again_domain"]
@@ -116,27 +119,30 @@ class ParserView(TemplateView):
                     count_shop_store_domains += r["count_shop_store_domains"]
                     data += [(i, r["data"][i]) for i in r["data"]]
                     bad_list += r["bad_list"]
-
-                if self.request.GET.get('again', None) == "True":
+                print('1')
+                if self.request.GET.get('again', None) == "True" or self.request.GET.get('check_good_again', None) == "True":
                     StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, count_shop_store_domains=count_shop_store_domains, 
                         count_domains=count_all_domains, status="AGAINDATA").save()
                 else:
                     StatisticsModel.objects.create(good=good, bad=bad, check_again=check_again, count_shop_store_domains=count_shop_store_domains, 
                         count_domains=count_all_domains, status="FULL").save()
+                print('2')
                 upload = [
-                    UploadDataModel(domain=row[0], date=row[1]["date"], domain_for_parsing = [row[1]["date"], row[0]], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
-                                                    ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), is_showing=True, status="GOOD")
+                    UploadDataModel(domain=row[0], date=row[1]["date"], domain_for_parsing = [row[1]["date"], row[0]], phone='\n'.join(row[1]["phone"]), email='\n'.join(row[1]["email"]), inn='\n'.join(row[1]["inn"]),
+                                                    ooo='\n'.join(row[1]["ooo"]), ip='\n'.join(row[1]["individual"]), is_showing=True, status="GOOD")
                     if any([row[1][r] != [] for r in row[1] if r != "date"]) else 
-                    UploadDataModel(domain=row[0], date=row[1]["date"], domain_for_parsing = [row[1]["date"], row[0]], phone=', '.join(row[1]["phone"]), email=', '.join(row[1]["email"]), inn=', '.join(row[1]["inn"]),
-                                                    ooo=', '.join(row[1]["ooo"]), ip=', '.join(row[1]["individual"]), is_showing=False, status="GOOD")
+                    UploadDataModel(domain=row[0], date=row[1]["date"], domain_for_parsing = [row[1]["date"], row[0]], phone='\n'.join(row[1]["phone"]), email='\n'.join(row[1]["email"]), inn='\n'.join(row[1]["inn"]),
+                                                    ooo='\n'.join(row[1]["ooo"]), ip='\n'.join(row[1]["individual"]), is_showing=False, status="GOOD")
                     for row in data 
                 ]
+                print('3')
                 UploadDataModel.objects.bulk_create(upload)
 
                 upload = [
                     UploadDataModel(domain=row[1], date=row[0], domain_for_parsing = [row[0], row[1]], is_showing=False, status="AGAIN")
                     for row in again_domain
                 ]
+                print('4')
                     # AgainDataModel.objects.create(domain=row)
                 UploadDataModel.objects.bulk_create(upload)
 
@@ -144,6 +150,7 @@ class ParserView(TemplateView):
                     UploadDataModel(domain=row[1], date=row[0], domain_for_parsing = [row[0], row[1]], is_showing=False, status="BAD")
                     for row in bad_list
                 ]
+                print('5')
                 UploadDataModel.objects.bulk_create(upload)
 
 
@@ -182,7 +189,7 @@ class ParserView(TemplateView):
         # if not self.request.POST.get("date", None) is None:
         #     date = self.request.POST.get("date")
         #     if date == "" or not self.check_format(date):
-        #         return HttpResponse("<h1>Плохой формат даты</h1> <br> <a href='/parser'>Вернуться на главную страницу</a>")
+        #         return HttpResponse("<h1>Плохой формат даты</h1> \n <a href='/parser'>Вернуться на главную страницу</a>")
         #     save_data = DateModel.objects.create(date=date)
         #     save_data.save()
 
@@ -212,6 +219,7 @@ class ParserView(TemplateView):
                     show.save()
                 except:
                     pass
+
         # if not self.request.POST.get("id", None) is None:
         #     data = ShowDataModel.objects.get(id=self.request.POST.get("id"))
         #     if not self.request.POST.get("is_check", None) is None:

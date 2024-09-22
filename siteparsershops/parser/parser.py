@@ -6,7 +6,7 @@ import time
 
 from bs4 import BeautifulSoup
 
-from django.core.cache import cache
+# from django.core.cache import cache
 
 
 #если есть данные и/или сайт не пустышка - успешно
@@ -256,5 +256,5 @@ def split_file(nums: int, data: list):
 # cache.set("check_again", 0)
 # cache.set("again_domain", [])
 # cache.set("data", {})
-cache.set("count_data", 1)
-cache.set("start_parser", False)
+# cache.set("count_data", 1)
+# cache.set("start_parser", False)

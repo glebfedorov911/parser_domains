@@ -151,6 +151,12 @@
                     <input type="hidden" name="check_again_ids" id="check_again_ids">
                     <button type="submit" class="btn btn-custom btn-small w-100">Применить</button>
                 </form>
+                
+                <form method="get">
+                    {% csrf_token %}
+                    <input type="hidden" name="check_good_again" value="True"> 
+                    <button type="submit" class="btn btn-custom btn-small w-100">Проверить текущие</button>
+                </form>
 
                 <div class="pagination">
                     <span class="step-links">
