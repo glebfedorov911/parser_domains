@@ -31,7 +31,6 @@ class ParserView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        lastfile = FileModel.objects.all().order_by("-id")
 
         context["title"] = "Парсер доменов"
         context["form_file"] = self.form_file
