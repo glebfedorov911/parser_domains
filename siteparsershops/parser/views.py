@@ -14,6 +14,7 @@ from siteparsershops.settings import MEDIA_ROOT
 
 import re
 import threading
+import json
 import multiprocessing
 
 
@@ -54,10 +55,20 @@ class ParserView(TemplateView):
             
             stats_full = StatisticsModel.objects.filter(status="FULL").order_by("-id")
             stats_again = StatisticsModel.objects.filter(status="AGAINDATA").order_by("-id")
+            check = UploadDataModel.objects.all()
+            check_shop_store = [data for data in check if 'shop' in data.domain.lower() or 'store' in data.domain.lower()]
+            check_good = [data for data in check if data.status == 'GOOD']
+            check_bad = [data for data in check if data.status == 'BAD']
+            check_again= [data for data in check if data.status == 'AGAIN']
             if stats_full:
                 context["stats_full"] = stats_full[0]
             if stats_again:
                 context["stats_again"] = stats_again[0]
+            context['count_check_shop_store'] = len(check_shop_store) if check else 0
+            context['count_check_good'] = len(check_good) if check else 0
+            context['count_check_bad'] = len(check_bad) if check else 0
+            context['count_check_again'] = len(check_again) if check else 0
+            context['count_check'] = len(check) if check else 0
 
         return context
 
@@ -101,15 +112,19 @@ class ParserView(TemplateView):
                 else:
                     all_data = split_file(16, all_data)
                 res = self.start_parser(all_data, delete, shablon)
-                data.delete()
                 good = bad = check_again = count_shop_store_domains = 0
                 again_domain = []
-                data = []
+                data_from_parser = []
                 bad_list = []
+                delete_again = None
                 if self.request.GET.get('again', None) == "True":
-                    UploadDataModel.objects.filter(status="AGAIN").delete()
+                    delete_again = UploadDataModel.objects.filter(status="AGAIN")
                 elif self.request.GET.get('check_good_again', None) == "True":
-                    UploadDataModel.objects.filter(status="GOOD", is_showing=True).delete()
+                    delete_again = UploadDataModel.objects.filter(status="GOOD", is_showing=True)
+
+                data.delete()
+                if delete_again:
+                    delete_again.delete()
 
                 for r in res:
                     again_domain += r["again_domain"]
@@ -117,7 +132,7 @@ class ParserView(TemplateView):
                     check_again += r["check_again"]
                     bad += r["bad"]
                     count_shop_store_domains += r["count_shop_store_domains"]
-                    data += [(i, r["data"][i]) for i in r["data"]]
+                    data_from_parser += [(i, r["data"][i]) for i in r["data"]]
                     bad_list += r["bad_list"]
                 print('1')
                 if self.request.GET.get('again', None) == "True" or self.request.GET.get('check_good_again', None) == "True":
@@ -133,7 +148,7 @@ class ParserView(TemplateView):
                     if any([row[1][r] != [] for r in row[1] if r != "date"]) else 
                     UploadDataModel(domain=row[0], date=row[1]["date"], domain_for_parsing = [row[1]["date"], row[0]], phone='\n'.join(row[1]["phone"]), email='\n'.join(row[1]["email"]), inn='\n'.join(row[1]["inn"]),
                                                     ooo='\n'.join(row[1]["ooo"]), ip='\n'.join(row[1]["individual"]), is_showing=False, status="GOOD")
-                    for row in data 
+                    for row in data_from_parser 
                 ]
                 print('3')
                 UploadDataModel.objects.bulk_create(upload)
@@ -210,12 +225,29 @@ class ParserView(TemplateView):
                 # query_domain.delete()
                 # AgainDataModel.objects.create(domain=domain).save()
 
-        if self.request.POST.get("is_check_ids") != '' and not self.request.POST.get("is_check_ids") is None:
-            for id_domain in self.request.POST.get("is_check_ids").split(","):
+        if self.request.POST.get("is_check_ids") != '' and not self.request.POST.get("is_check_ids") is None and self.request.POST.get("is_check_ids") != {}:
+            is_check_ids = eval(self.request.POST.get("is_check_ids"))
+            for id_domain in is_check_ids:
+                show = UploadDataModel.objects.get(id=int(id_domain))
+                show.is_showing = False
+                show.status_good = is_check_ids[id_domain]
+                show.save()
+            # for id_domain in self.request.POST.get("is_check_ids").split(","):
+            #     try:
+            #         # show = ShowDataModel.objects.get(id=int(id_domain))
+            #         show = UploadDataModel.objects.get(id=int(id_domain))
+            #         show.is_showing = False
+            #         show.save()
+            #     except:
+            #         pass
+
+        if self.request.POST.get("del_self_ids") != '' and not self.request.POST.get("del_self_ids") is None:
+            for id_domain in self.request.POST.get("del_self_ids").split(","):
                 try:
                     # show = ShowDataModel.objects.get(id=int(id_domain))
                     show = UploadDataModel.objects.get(id=int(id_domain))
                     show.is_showing = False
+                    show.status = "DEL"
                     show.save()
                 except:
                     pass

@@ -40,7 +40,7 @@ def find_phone(html: str):
     return [res.replace("xa0", "") for res in (re.findall(pat1, html) + re.findall(pat2, html) + re.findall(pat3, html) + re.findall(pat4, html) + re.findall(pat5, html) + re.findall(pat6, html) + re.findall(pat7, html))]
 
 def find_inn(html: str):
-    return re.findall(r"ИНН [a-zA-Z0-9.-«»]{10,12}(?=\s|$|>|<|»|«|,)", html)
+    return re.findall(r"ИНН [a-zA-Z0-9.-«»]{10,12}(?=\s|$|>|<|»|«|,)", html) + re.findall(r'>\s*(\d{10})\s*</', html) + re.findall(r'>\s*(\d{12})\s*</', html) 
 
 def find_ooo(html: str):
     clean_html = re.sub(r'<[^>]+>', ' ', html)

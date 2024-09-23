@@ -102,14 +102,14 @@
             <div class="col-12">
                 <h2 class="font-weight-bold">Результаты:</h2>
                 {% if stats_full.check_again or stats_full.bad or stats_full.good %}
-                    <div class="alert alert-info">Парсинг<br>Всего доменов: {{ stats_full.count_domains }} | Количество Shop/Store доменов: {{ stats_full.count_shop_store_domains }} | Успешно спаршено: {{ stats_full.good }}* | Не спрашено: {{ stats_full.bad }} | Отправлено на перепроверку: {{ stats_full.check_again }}
+                    <div class="alert alert-info">Парсинг<br>Всего доменов: {{ stats_full.count_domains }} ({{count_check}}) | Количество Shop/Store доменов: {{ stats_full.count_shop_store_domains }} ({{count_check_shop_store}}) | Успешно спаршено: {{ stats_full.good }}* ({{count_check_good}}) | Не спрашено: {{ stats_full.bad }} ({{count_check_bad}}) | Отправлено на перепроверку: {{ stats_full.check_again }} ({{count_check_again}})
                     <br><span class=addable>*веб страницы без данных не отображаются</span></div>
                 {% endif %}
                 {% if stats_again.check_again or stats_again.bad or stats_again.good %}
-                    <div class="alert alert-info">Перепроверка<br>Всего доменов: {{ stats_again.count_domains }} | Количество Shop/Store доменов: {{ stats_again.count_shop_store_domains }} | Успешно спаршено: {{ stats_again.good }}* | Не спрашено: {{ stats_again.bad }} | Отправлено на перепроверку: {{ stats_again.check_again }}
+                    <div class="alert alert-info">Перепроверка<br>Всего доменов: {{ stats_again.count_domains }} ({{count_check}}) | Количество Shop/Store доменов: {{ stats_again.count_shop_store_domains }} ({{count_check_shop_store}}) | Успешно спаршено: {{ stats_again.good }}* ({{count_check_good}}) | Не спрашено: {{ stats_again.bad }} ({{count_check_bad}}) | Отправлено на перепроверку: {{ stats_again.check_again }} ({{count_check_again}})
                     <br><span class=addable>*веб страницы без данных не отображаются</span></div>
                 {% endif %}
-
+                                
                 <form method="post" id="saveForm" class="mb-4">
                     {% csrf_token %}
                     <table class="table table-striped">
@@ -123,6 +123,7 @@
                                 <th>ИП</th>
                                 <th>Успешно</th>
                                 <th>Отправить на перепроверку</th>
+                                <th>Удалить</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -136,10 +137,19 @@
                                         <td>{{ data.ooo }}</td>
                                         <td>{{ data.ip }}</td>
                                         <td>
-                                            <input type="checkbox" class="is_check" data-id="{{ data.pk }}">
+                                            <select id="status_good" name="status_good" data-pk="{{ data.pk }}">
+                                                <option value="" ></option>
+                                                <option value="TAKE" >Берем в работу</option>
+                                                <option value="ALREADY">Уже есть договор</option>
+                                                <option value="NOTNEED" >Договор не нужен</option>
+                                                <option value="DOESNOT" >Не подходит</option>
+                                            </select>   
                                         </td>
                                         <td>
                                             <input type="checkbox" class="check_again" data-id="{{ data.pk }}">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox" class="del_self" data-id="{{ data.pk }}">
                                         </td>
                                     </tr>
                                 {% endif %}
@@ -149,13 +159,15 @@
 
                     <input type="hidden" name="is_check_ids" id="is_check_ids">
                     <input type="hidden" name="check_again_ids" id="check_again_ids">
+                    <input type="hidden" name="del_self_ids" id="del_self_ids">
                     <button type="submit" class="btn btn-custom btn-small w-100">Применить</button>
                 </form>
                 
                 <form method="get">
                     {% csrf_token %}
                     <input type="hidden" name="check_good_again" value="True"> 
-                    <button type="submit" class="btn btn-custom btn-small w-100">Проверить текущие</button>
+                    <div id="pereparser2" hidden>Перепроверка запущена</div>
+                    <button type="submit" onclick="setAgainParam2()" class="btn btn-custom btn-small w-100">Проверить текущие</button>
                 </form>
 
                 <div class="pagination">
@@ -190,6 +202,10 @@
         function setAgainParam() {
             document.getElementById("again-param").value = "True";
             document.getElementById("pereparser").hidden = false;
+        }
+        
+        function setAgainParam2() {
+            document.getElementById("pereparser2").hidden = false;
         }
 
         document.getElementById("addcode").addEventListener("click", function(e) {
@@ -272,13 +288,25 @@
         document.addEventListener('DOMContentLoaded', function() {
             const checkboxesIsCheck = document.querySelectorAll('.is_check');
             const checkboxesCheckAgain = document.querySelectorAll('.check_again');
+            const checkboxesDelSelf = document.querySelectorAll('.del_self');
+            const statusGood = document.querySelectorAll('#status_good');
             const isCheckIds = new Set();
             const checkAgainIds = new Set();
+            const delSelfIds = new Set();
+            const statusGoodDict = new Object();
 
             document.getElementById("gooddownload").addEventListener("click", function() {
                 document.getElementById("showdownload").hidden=false;
             }) 
 
+            statusGood.forEach(check => {
+                check.addEventListener('change', function() {
+                    if (this.value=='' && this.getAttribute("data-pk") in statusGoodDict)
+                        delete statusGoodDict[this.getAttribute("data-pk")]
+                    else
+                        statusGoodDict[this.getAttribute("data-pk")] = this.value
+                })
+            })
             checkboxesIsCheck.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     const id = this.getAttribute('data-id');
@@ -286,6 +314,17 @@
                         isCheckIds.add(id);
                     } else {
                         isCheckIds.delete(id);
+                    }
+                });
+            });
+
+            checkboxesDelSelf.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const id = this.getAttribute('data-id');
+                    if (this.checked) {
+                        delSelfIds.add(id);
+                    } else {
+                        delSelfIds.delete(id);
                     }
                 });
             });
@@ -304,9 +343,12 @@
             document.getElementById('saveForm').addEventListener('submit', function(e) {
                 const isCheckIdsInput = document.getElementById('is_check_ids');
                 const checkAgainIdsInput = document.getElementById('check_again_ids');
-                isCheckIdsInput.value = Array.from(isCheckIds).join(',');
+                const delSelfIdsInput = document.getElementById('del_self_ids');
                 checkAgainIdsInput.value = Array.from(checkAgainIds).join(',');
+                isCheckIdsInput.value =  JSON.stringify(statusGoodDict);
+                delSelfIdsInput.value = Array.from(delSelfIds).join(',');
             });
+            
 
         });
     </script>
@@ -350,10 +392,26 @@
 
     table {
         font-size: 1.1rem;
+        table-layout: fixed; /* Ensure table doesn't change size */
+        width: 100%; /* Keep table width consistent */
+        overflow: hidden; /* Prevent overflow */
     }
 
     th, td {
         padding: 10px 15px;
+        white-space: nowrap; /* Prevent text wrapping */
+        overflow: hidden;
+        text-overflow: ellipsis; /* Add ellipsis if the text is too long */
+    }
+
+    th {
+        font-weight: bold;
+    }
+
+    select {
+        width: 100%; /* Fixed width for select dropdowns */
+        max-width: 150px; /* Adjust max-width as needed */
+        font-size: 1rem;
     }
 
     .container-fluid {
@@ -399,11 +457,13 @@
         padding: 5px;
         font-size: 1rem;
         margin-right: 10px;
+        max-width: 120px; /* Ensure input size is consistent */
     }
 
     .calendar-table {
         width: 100%;
         border-collapse: collapse;
+        table-layout: fixed; /* Prevent table from resizing */
     }
 
     .calendar-table th, .calendar-table td {
@@ -435,5 +495,15 @@
     .hide {
         display: None;
     }
+
+    th, td {
+        width: 14.28%;
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #ddd;
+        word-wrap: break-word; 
+        white-space: normal;   
+    }
+
 </style>
 {% endblock %}

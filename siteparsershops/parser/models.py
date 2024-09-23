@@ -33,6 +33,14 @@ class UploadDataModel(models.Model):
         ("BAD", "Невозможно спрасить"),
         ("AGAIN", "Отправлено на перепроверку"),
         ("NTH", "Файл пока что только загружен"),
+        ("DEL", "Удалили самостоятельно"),
+    )
+
+    CHOICES_GOOD = (
+        ("TAKE", "Берем в работу"),
+        ("ALREADY", "Уже есть договор"),
+        ("NOTNEED", "Договор не нужен"),
+        ("DOESNOT", "Не подходит"),
     )
 
     date = models.TextField(null=False)
@@ -46,6 +54,7 @@ class UploadDataModel(models.Model):
     is_check = models.BooleanField(default=False, null=True)
     is_showing = models.BooleanField(default=False, null=True)
     status = models.CharField(max_length=5, null=True, choices=CHOICES)
+    status_good = models.CharField(max_length=7, null=True, choices=CHOICES_GOOD)
 
     def __str__(self):
         return self.domain
