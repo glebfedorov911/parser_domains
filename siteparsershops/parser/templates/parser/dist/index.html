@@ -102,11 +102,11 @@
             <div class="col-12">
                 <h2 class="font-weight-bold">Результаты:</h2>
                 {% if stats_full.check_again or stats_full.bad or stats_full.good %}
-                    <div class="alert alert-info">Парсинг<br>Всего доменов: {{ stats_full.count_domains }} ({{count_check}}) | Количество Shop/Store доменов: {{ stats_full.count_shop_store_domains }} ({{count_check_shop_store}}) | Успешно спаршено: {{ stats_full.good }}* ({{count_check_good}}) | Не спрашено: {{ stats_full.bad }} ({{count_check_bad}}) | Отправлено на перепроверку: {{ stats_full.check_again }} ({{count_check_again}})
+                    <div class="alert alert-info">Парсинг<br>Всего доменов: {{ stats_full.count_domains }} ({{count_check}}) | Количество Shop/Store доменов: {{ stats_full.count_shop_store_domains }} ({{count_check_shop_store}}) | Успешно спаршено: {{ stats_full.good }}* ({{count_check_good}}) | Не спрашено: {{ stats_full.bad }} | Отправлено на перепроверку: {{ stats_full.check_again }} 
                     <br><span class=addable>*веб страницы без данных не отображаются</span></div>
                 {% endif %}
                 {% if stats_again.check_again or stats_again.bad or stats_again.good %}
-                    <div class="alert alert-info">Перепроверка<br>Всего доменов: {{ stats_again.count_domains }} ({{count_check}}) | Количество Shop/Store доменов: {{ stats_again.count_shop_store_domains }} ({{count_check_shop_store}}) | Успешно спаршено: {{ stats_again.good }}* ({{count_check_good}}) | Не спрашено: {{ stats_again.bad }} ({{count_check_bad}}) | Отправлено на перепроверку: {{ stats_again.check_again }} ({{count_check_again}})
+                    <div class="alert alert-info">Перепроверка<br>Всего доменов: {{ stats_again.count_domains }} ({{count_check}}) | Количество Shop/Store доменов: {{ stats_again.count_shop_store_domains }} ({{count_check_shop_store}}) | Успешно спаршено: {{ stats_again.good }}* ({{count_check_good}}) | Не спрашено: {{ stats_again.bad }} | Отправлено на перепроверку: {{ stats_again.check_again }}
                     <br><span class=addable>*веб страницы без данных не отображаются</span></div>
                 {% endif %}
                                 
