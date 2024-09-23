@@ -31,7 +31,6 @@ class ParserView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        lastdate = DateModel.objects.all().order_by("-id")
         lastfile = FileModel.objects.all().order_by("-id")
 
         context["title"] = "Парсер доменов"
@@ -40,35 +39,31 @@ class ParserView(TemplateView):
         context["form_shablon"] = self.form_shablon
         context["form_checkbox"] = self.form_checkbox
         context["is_start_parser"] = self._is_start_parser
-        context["date"] = lastdate[0] if len(lastdate) != 0 else ""
-        if len(lastfile) != 0:
-            # context["showdata"] = ShowDataModel.objects.filter(file_id=lastfile[0].pk)
-            showdata = UploadDataModel.objects.filter(is_showing=True, status="GOOD")
-            context["date_in_parser_with_nth_status"] = ','.join(list({date.date for date in UploadDataModel.objects.filter(status='NTH')}))
-            context["date_in_parser_already_parse"] = ','.join(list({date.date for date in UploadDataModel.objects.filter(~Q(status='NTH'))}))
-            paginator = Paginator(showdata, 50)
-            
-            page_number = self.request.GET.get("page", None)
-            page_obj = paginator.get_page(page_number)
+        context["date_in_parser_with_nth_status"] = ','.join(list({date.date for date in UploadDataModel.objects.filter(status='NTH')}))
+        context["date_in_parser_already_parse"] = ','.join(list({date.date for date in UploadDataModel.objects.filter(~Q(status='NTH'))}))
 
-            context["showdata"] = page_obj
-            
-            stats_full = StatisticsModel.objects.filter(status="FULL").order_by("-id")
-            stats_again = StatisticsModel.objects.filter(status="AGAINDATA").order_by("-id")
-            check = UploadDataModel.objects.all()
-            check_shop_store = [data for data in check if 'shop' in data.domain.lower() or 'store' in data.domain.lower()]
-            check_good = [data for data in check if data.status == 'GOOD']
-            check_bad = [data for data in check if data.status == 'BAD']
-            check_again= [data for data in check if data.status == 'AGAIN']
-            if stats_full:
-                context["stats_full"] = stats_full[0]
-            if stats_again:
-                context["stats_again"] = stats_again[0]
-            context['count_check_shop_store'] = len(check_shop_store) if check else 0
-            context['count_check_good'] = len(check_good) if check else 0
-            context['count_check_bad'] = len(check_bad) if check else 0
-            context['count_check_again'] = len(check_again) if check else 0
-            context['count_check'] = len(check) if check else 0
+        showdata = UploadDataModel.objects.filter(is_showing=True, status="GOOD")
+        paginator = Paginator(showdata, 50)
+        page_number = self.request.GET.get("page", None)
+        page_obj = paginator.get_page(page_number)
+        context["showdata"] = page_obj
+        
+        stats_full = StatisticsModel.objects.filter(status="FULL").order_by("-id")
+        stats_again = StatisticsModel.objects.filter(status="AGAINDATA").order_by("-id")
+        check = UploadDataModel.objects.all()
+        check_shop_store = [data for data in check if 'shop' in data.domain.lower() or 'store' in data.domain.lower()]
+        check_good = [data for data in check if data.status == 'GOOD']
+        check_bad = [data for data in check if data.status == 'BAD']
+        check_again= [data for data in check if data.status == 'AGAIN']
+        if stats_full:
+            context["stats_full"] = stats_full[0]
+        if stats_again:
+            context["stats_again"] = stats_again[0]
+        context['count_check_shop_store'] = len(check_shop_store) if check else 0
+        context['count_check_good'] = len(check_good) if check else 0
+        context['count_check_bad'] = len(check_bad) if check else 0
+        context['count_check_again'] = len(check_again) if check else 0
+        context['count_check'] = len(check) if check else 0
 
         return context
 
