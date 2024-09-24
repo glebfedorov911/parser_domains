@@ -25,8 +25,10 @@ from parser.views import page_not_found
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("parser/", include("parser.urls")),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]
 
 handler404 = page_not_found
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
