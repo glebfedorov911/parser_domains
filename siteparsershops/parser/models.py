@@ -53,6 +53,7 @@ class UploadDataModel(models.Model):
     ip = models.TextField(null=True)
     is_check = models.BooleanField(default=False, null=True)
     is_showing = models.BooleanField(default=False, null=True)
+    it_was_good = models.BooleanField(default=False, null=True)
     status = models.CharField(max_length=5, null=True, choices=CHOICES)
     status_good = models.CharField(max_length=7, null=True, choices=CHOICES_GOOD)
 

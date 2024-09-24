@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 from django.core.cache import cache
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Count, Min
 
 from .forms import FileForm, DateForm, ShablonForm, CheckBoxForm
 from .models import FileModel, DateModel, StatisticsModel, AgainShablonModel, DeleteShablonModel, UploadDataModel
@@ -118,10 +118,10 @@ class ParserView(TemplateView):
     def save_good(self, data_from_parser):
         upload = [
             UploadDataModel(domain=row[0], date=row[1]["date"], domain_for_parsing = [row[1]["date"], row[0]], phone='\n'.join(row[1]["phone"]), email='\n'.join(row[1]["email"]), inn='\n'.join(row[1]["inn"]),
-                                            ooo='\n'.join(row[1]["ooo"]), ip='\n'.join(row[1]["individual"]), is_showing=True, status="GOOD")
+                                            ooo='\n'.join(row[1]["ooo"]), ip='\n'.join(row[1]["individual"]), it_was_good=True, is_showing=True, status="GOOD")
             if any([row[1][r] != [] for r in row[1] if r != "date"]) else 
             UploadDataModel(domain=row[0], date=row[1]["date"], domain_for_parsing = [row[1]["date"], row[0]], phone='\n'.join(row[1]["phone"]), email='\n'.join(row[1]["email"]), inn='\n'.join(row[1]["inn"]),
-                                            ooo='\n'.join(row[1]["ooo"]), ip='\n'.join(row[1]["individual"]), is_showing=False, status="GOOD")
+                                            ooo='\n'.join(row[1]["ooo"]), ip='\n'.join(row[1]["individual"]), it_was_good=True, is_showing=False, status="GOOD")
             for row in data_from_parser 
         ]
         return upload
@@ -274,3 +274,20 @@ class ParserView(TemplateView):
 def page_not_found(request, exception):
     print(exception)
     return HttpResponse("<h1>Такой страницы не существует =)</h1> <br> <a href='/parser/'>Перейти на главную страницу</a>")
+
+def delete_dublicate(request):
+    dublicates = UploadDataModel.objects.values('domain').annotate(name_count=Count('domain')).filter(name_count__gt=1)
+
+    for dublicate in dublicates:
+        duplicates_queryset = UploadDataModel.objects.filter(domain=dublicate['domain'])
+        
+        with_status = duplicates_queryset.filter(~Q(status_good=None))
+        
+        if with_status.exists():
+            to_keep = with_status.order_by('id').first()
+        else:
+            to_keep = duplicates_queryset.order_by('id').first()
+
+        duplicates_queryset.exclude(id=to_keep.id).delete()
+
+    return HttpResponse('Good')
