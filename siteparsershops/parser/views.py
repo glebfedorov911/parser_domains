@@ -264,4 +264,5 @@ class ParserView(TemplateView):
         return len(re.findall(frmt, date)) != 0
 
 def page_not_found(request, exception):
+    print(exception)
     return HttpResponse("<h1>Такой страницы не существует =)</h1> <br> <a href='/parser'>Перейти на главную страницу</a>")
