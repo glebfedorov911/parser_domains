@@ -100,14 +100,18 @@
 
         <div class="row no-gutters mt-4">
             <div class="col-12">
-                <h2 class="font-weight-bold">Результаты:</h2>
-                {% if stats_full.check_again or stats_full.bad or stats_full.good %}
-                    <div class="alert alert-info">Парсинг<br>Всего доменов: {{ stats_full.count_domains }} ({{count_check}}) | Количество Shop/Store доменов: {{ stats_full.count_shop_store_domains }} ({{count_check_shop_store}}) | Успешно спаршено: {{ stats_full.good }}* ({{count_check_good}}) | Не спрашено: {{ stats_full.bad }} | Отправлено на перепроверку: {{ stats_full.check_again }} 
-                    <br><span class=addable>*веб страницы без данных не отображаются</span></div>
-                {% endif %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="font-weight-bold mb-0">Результаты:</h2>
+                    <div class="d-flex">
+                        <a class="href-black mr-3" href="?type_check=GOOD&page={{showdata.number}}">Рабочая таблица</a>
+                        <a class="href-black" href="?type_check=NOTSHOW&page={{showdata.number}}">Успешные без данных</a>
+                    </div>
+                </div>
+                <div class="alert alert-info">Парсинг<br>Всего доменов: {{ stats_full.count_domains }} ({{count_check}}) | Количество Shop/Store доменов: {{ stats_full.count_shop_store_domains }} ({{count_check_shop_store}}) | Успешно спаршено: {{ stats_full.good }}* ({{count_check_good}}) | Не спрашено: {{ stats_full.bad }} | Отправлено на перепроверку: {{ stats_full.check_again }} 
+                <br><span class="addable">*</span>веб страницы без данных не отображаются</div>
                 {% if stats_again.check_again or stats_again.bad or stats_again.good %}
-                    <div class="alert alert-info">Перепроверка<br>Всего доменов: {{ stats_again.count_domains }} ({{count_check}}) | Количество Shop/Store доменов: {{ stats_again.count_shop_store_domains }} ({{count_check_shop_store}}) | Успешно спаршено: {{ stats_again.good }}* ({{count_check_good}}) | Не спрашено: {{ stats_again.bad }} | Отправлено на перепроверку: {{ stats_again.check_again }}
-                    <br><span class=addable>*веб страницы без данных не отображаются</span></div>
+                    <div class="alert alert-info">Перепроверка<br>Всего доменов: {{ stats_again.count_domains }} | Количество Shop/Store доменов: {{ stats_again.count_shop_store_domains }} | Успешно спаршено: {{ stats_again.good }}* | Не спрашено: {{ stats_again.bad }} | Отправлено на перепроверку: {{ stats_again.check_again }}
+                    <br><span class="addable">*</span>веб страницы без данных не отображаются</div>
                 {% endif %}
                                 
                 <form method="post" id="saveForm" class="mb-4">
@@ -128,31 +132,29 @@
                         </thead>
                         <tbody>
                             {% for data in showdata %}
-                                {% if data.is_showing %}
-                                    <tr>
-                                        <td><a href=http://{{ data.domain }} target="_blank">{{ data.domain }}</a></td>
-                                        <td>{{ data.phone }}</td>
-                                        <td>{{ data.email }}</td>
-                                        <td>{{ data.inn }}</td>
-                                        <td>{{ data.ooo }}</td>
-                                        <td>{{ data.ip }}</td>
-                                        <td>
-                                            <select id="status_good" name="status_good" data-pk="{{ data.pk }}">
-                                                <option value="" ></option>
-                                                <option value="TAKE" >Берем в работу</option>
-                                                <option value="ALREADY">Уже есть договор</option>
-                                                <option value="NOTNEED" >Договор не нужен</option>
-                                                <option value="DOESNOT" >Не подходит</option>
-                                            </select>   
-                                        </td>
-                                        <td>
-                                            <input type="checkbox" class="check_again" data-id="{{ data.pk }}">
-                                        </td>
-                                        <td>
-                                            <input type="checkbox" class="del_self" data-id="{{ data.pk }}">
-                                        </td>
-                                    </tr>
-                                {% endif %}
+                                <tr>
+                                    <td><a href=http://{{ data.domain }} target="_blank">{{ data.domain }}</a></td>
+                                    <td>{{ data.phone }}</td>
+                                    <td>{{ data.email }}</td>
+                                    <td>{{ data.inn }}</td>
+                                    <td>{{ data.ooo }}</td>
+                                    <td>{{ data.ip }}</td>
+                                    <td>
+                                        <select id="status_good" name="status_good" data-pk="{{ data.pk }}">
+                                            <option value="" ></option>
+                                            <option value="TAKE" >Берем в работу</option>
+                                            <option value="ALREADY">Уже есть договор</option>
+                                            <option value="NOTNEED" >Договор не нужен</option>
+                                            <option value="DOESNOT" >Не подходит</option>
+                                        </select>   
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" class="check_again" data-id="{{ data.pk }}">
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" class="del_self" data-id="{{ data.pk }}">
+                                    </td>
+                                </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -173,8 +175,8 @@
                 <div class="pagination">
                     <span class="step-links">
                         {% if showdata.has_previous %}
-                            <a href="?page=1">&laquo; Первая</a>
-                            <a href="?page={{ showdata.previous_page_number }}">Предыдущая</a>
+                            <a href="?page=1&type_check={{type_check}}">&laquo; Первая</a>
+                            <a href="?page={{ showdata.previous_page_number }}&type_check={{type_check}}">Предыдущая</a>
                         {% endif %}
 
                         <span class="current">
@@ -184,8 +186,8 @@
                         </span>
 
                         {% if showdata.has_next %}
-                            <a href="?page={{ showdata.next_page_number }}">Следующая</a>
-                            <a href="?page={{ showdata.paginator.num_pages }}">Последняя &raquo;</a>
+                            <a href="?page={{ showdata.next_page_number }}&type_check={{type_check}}">Следующая</a>
+                            <a href="?page={{ showdata.paginator.num_pages }}&type_check={{type_check}}">Последняя &raquo;</a>
                         {% endif %}
                     </span>
                 </div>
@@ -503,6 +505,17 @@
         border: 1px solid #ddd;
         word-wrap: break-word; 
         white-space: normal;   
+    }
+
+    .href-black {
+        color: #333;
+        text-decoration: underline;
+        margin-left: 10px; 
+        transition: color 0.3s ease; 
+    }
+
+    .href-black:hover {
+        color: #0056b3; 
     }
 
 </style>

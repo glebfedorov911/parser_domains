@@ -27,7 +27,7 @@ def data_from_file(filename: str) -> list:
         return result[1:]
 
 def find_email(html: str):
-    return [res for res in re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}(?=\s|$|>|<|»|«|,)", html) if res.split(".")[-1] not in ["png", "webp", "jpeg", "jpg", "svg"]]
+    return [res for res in re.findall(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}\.?(?=\s|$|>|<|»|«|,)", html) if res.split(".")[-1] not in ["png", "webp", "jpeg", "jpg", "svg"]]
 # 
 def find_phone(html: str):
     pat1 = r"(?<=[\s><:])\+[0-9]{9,15}(?=\s|$|>|<)"
@@ -37,7 +37,14 @@ def find_phone(html: str):
     pat7 = r"(?<=[\s><:])\+7 \(\d{3}\) \d{3} \d{2} \d{2}"
     pat4 = r"(?<=[\s><:])8\d{10}"
     pat5 = r"\+7\s?[0-9\s‑]{10,}"
-    return [res.replace("xa0", "") for res in (re.findall(pat1, html) + re.findall(pat2, html) + re.findall(pat3, html) + re.findall(pat4, html) + re.findall(pat5, html) + re.findall(pat6, html) + re.findall(pat7, html))]
+    pat8 = r"\+7\s?\(\d{3}\)\s?\d{3}-\d{4}"
+    pat9 = r"(?<=\s)8\(\d{3}\)\d{3}-\d{2}-\d{2}[.\s]?"
+    pat10 = r"^\+7\s\(\d{3}\)\s\d{3}-\d{2}-\d{2}$"
+    pat11 = r"^\+7\s\d{4}\s\d{2}\s\d{2}\s\d{2}"
+    pat12 = r"\+7\d{7,15}"
+    pat13 = r"\+7\s*\(?\d{3}\)?\s*\d{3}[-\s]?\d{2}[-\s]?\d{2}"
+
+    return [res.replace("xa0", "") for res in (re.findall(pat1, html) + re.findall(pat2, html) + re.findall(pat3, html) + re.findall(pat4, html) + re.findall(pat5, html) + re.findall(pat6, html) + re.findall(pat7, html) + re.findall(pat8, html) + re.findall(pat9, html) + re.findall(pat10, html) + re.findall(pat11, html) + re.findall(pat12, html) + re.findall(pat13, html))]
 
 def find_inn(html: str):
     return re.findall(r"ИНН [a-zA-Z0-9.-«»]{10,12}(?=\s|$|>|<|»|«|,)", html) + re.findall(r'>\s*(\d{10})\s*</', html) + re.findall(r'>\s*(\d{12})\s*</', html) 
@@ -45,13 +52,14 @@ def find_inn(html: str):
 def find_ooo(html: str):
     clean_html = re.sub(r'<[^>]+>', ' ', html)
 
+    pat6 = r"ООО\s«([^»]+)»"
     pat1 = r"ООО [a-zA-Zа-яА-Я0-9.-«»&;]{1,100}(?=\s|$|>|<|»|«|,)"
     pat2 = r"ООО [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100}(?=\s|$|>|<|»|«|,)"
     pat3 = r"ООО [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100}(?=\s|$|>|<|»|«|,)"
     pat4 = r"ООО [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100}(?=\s|$|>|<|»|«|,)"
     pat5 = r"ООО [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100} [a-zA-Zа-яА-Я0-9.-«»&;]{1,100}(?=\s|$|>|<|»|«|,)"
 
-    results = re.findall(pat1, clean_html) + re.findall(pat2, clean_html) + re.findall(pat3, clean_html) + re.findall(pat4, clean_html) + re.findall(pat5, clean_html)
+    results = re.findall(pat1, clean_html) + re.findall(pat2, clean_html) + re.findall(pat3, clean_html) + re.findall(pat4, clean_html) + re.findall(pat5, clean_html) + re.findall(pat6, clean_html)
 
     unique_results = []
     for result in sorted(results, key=len, reverse=True):
@@ -70,7 +78,7 @@ def find_urls(html: str, url: str):
     hrefs = [a.get("href") for a in soup.find_all("a", href=True)]
     final_hrefs = []
     for idx in range(len(hrefs)):
-        if any([True if exp in hrefs[idx] else False for exp in ("javascript", "js", "src", "io", "png", "jpg", "svg", "webp", "html")]):
+        if any([True if exp in hrefs[idx] else False for exp in (".javascript", ".js", ".src", ".io", ".png", ".jpg", ".svg", ".webp", ".html")]):
             continue
         elif not "http" in hrefs[idx]:
             if hrefs[idx] != '':
@@ -86,10 +94,13 @@ def find_urls(html: str, url: str):
         else:
             uri = hrefs[idx]
             final_hrefs.append(hrefs[idx])
-
+        
         if uri.count('/') >= 4 or "?" in uri:
             if uri in final_hrefs:
                 final_hrefs.remove(uri)
+        if 'contact' in uri:
+            if uri not in final_hrefs:
+                final_hrefs.append(uri)
 
     return list(set(final_hrefs))
 
@@ -184,11 +195,10 @@ def parser(all_data: list, shared, index, delete, shablon):
     
     for src in all_data:
         if not ("shop" in src[1].lower() or "store" in src[1].lower()):
-            bad_list.append(src)
             print("skip")
+            bad_list.append(src)
             continue
         count_shop_store_domains += 1
-        print("not under", src[1])
         try:
             req = requests.get("http://" + src[1], timeout=10)
         except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError, requests.exceptions.Timeout, requests.exceptions.TooManyRedirects,
@@ -198,6 +208,7 @@ def parser(all_data: list, shared, index, delete, shablon):
             bad += 1
             continue
         
+        print('not under', src[1])
         # if any([str(i.replace("   ", "").replace(" ", "")).strip() in str(str(req.text).replace("   ", "").replace(" ", "")).strip() for i in delete]):
         if any([re.sub(r'\s+', '', i) in re.sub(r'\s+', '', req.text) for i in delete]):
             # print("ОШИБКА", src)
@@ -206,7 +217,6 @@ def parser(all_data: list, shared, index, delete, shablon):
             continue
         
         if any([re.sub(r'\s+', '', i) in re.sub(r'\s+', '', req.text) for i in shablon]):
-            # print("ОШИБКА", src)
             again_domain.append(src)
             check_again += 1
             continue
@@ -221,8 +231,8 @@ def parser(all_data: list, shared, index, delete, shablon):
         data[src[1]]["date"] = src[0]
         good += 1
         for under_src in data[src[1]]["domain"]:
+            print("under", under_src)
             try:
-                print("under11", under_src)
                 under_req = requests.get(under_src, timeout=7)
                 data[src[1]]["email"] += find_email(under_req.text)
                 data[src[1]]["phone"] += find_phone(under_req.text)
