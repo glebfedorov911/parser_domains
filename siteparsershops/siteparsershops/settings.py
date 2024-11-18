@@ -33,11 +33,11 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "domains-main-31a38f-f51009-82-146-32-206.traefik.me",
+   "cdek-prof.ru"
 ]
 
 CSRF_TRUSTED_ORIGINS  = [
-    "https://domains-main-31a38f-f51009-82-146-32-206.traefik.me",
+    "https://cdek-prof.ru",
 ]
 
 # Application definition
