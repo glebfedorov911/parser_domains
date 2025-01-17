@@ -56,11 +56,11 @@ class ParserView(TemplateView):
     def get_data_by_type(self):
         _type = self.request.GET.get("type_check")
         if _type == "NOTSHOW":
-            return UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good=None)
-        q = UploadDataModel.objects.filter(is_showing=True, status="GOOD")
-        print(q.explain())
+            return UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good=None).order_by('id')
+        q = UploadDataModel.objects.filter(is_showing=True, status="GOOD").order_by('id')
+        print(q.explain(), "ZALUPA")
         return q
-        
+
     def get_type(self):
         return self.request.GET.get("type_check", None)
 
