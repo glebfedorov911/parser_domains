@@ -57,9 +57,7 @@ class ParserView(TemplateView):
         _type = self.request.GET.get("type_check")
         if _type == "NOTSHOW":
             return UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good=None).order_by('id')
-        q = UploadDataModel.objects.filter(is_showing=True, status="GOOD").order_by('id')
-        print(q.explain(), "ZALUPA")
-        return q
+        return UploadDataModel.objects.filter(is_showing=True, status="GOOD").order_by('id')
 
     def get_type(self):
         return self.request.GET.get("type_check", None)
@@ -295,5 +293,8 @@ def delete_dublicate(request):
     return HttpResponse('Good')
 
 def test_work_with_db(request):
-    print(len(UploadDataModel.objects.filter(~Q(status='NTH'))))
+    print("not NTH", len(UploadDataModel.objects.filter(~Q(status='NTH'))))
+    print("NTH", len(UploadDataModel.objects.filter(Q(status='NTH'))))
+    print("is s True, status GOOD", len(UploadDataModel.objects.filter(is_showing=True, status="GOOD").order_by('id')))
+    print("all", len(UploadDataModel.objects.all().order_by('id')))
     return HttpResponse("kaif")
