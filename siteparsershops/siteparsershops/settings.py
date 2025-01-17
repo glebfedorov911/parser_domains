@@ -40,6 +40,8 @@ CSRF_TRUSTED_ORIGINS  = [
     "https://cdek-prof.ru",
 ]
 
+INTERNAL_IPS = ["*"]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -51,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'parser.apps.ParserConfig',
     "channels",
+    "debug_toolbar"
 ]
 
 MIDDLEWARE = [
@@ -61,6 +64,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware"
 ]
 
 ROOT_URLCONF = 'siteparsershops.urls'
