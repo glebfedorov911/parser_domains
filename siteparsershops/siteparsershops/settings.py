@@ -40,7 +40,7 @@ CSRF_TRUSTED_ORIGINS  = [
     "https://cdek-prof.ru",
 ]
 
-INTERNAL_IPS = ['127.0.0.1', '82.146.32.206']
+INTERNAL_IPS = ['127.0.0.1', '82.146.32.206', "127.17.0.1"]
 
 # Application definition
 
