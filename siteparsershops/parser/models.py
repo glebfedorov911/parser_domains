@@ -62,7 +62,9 @@ class UploadDataModel(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=["is_showing", "status", "status_good"])
+            models.Index(fields=["status"]),
+            models.Index(fields=["is_showing", "status", "status_good"]),
+            models.Index(fields=["is_showing", "status"])
         ]
 
 # class AgainDataModel(models.Model):
