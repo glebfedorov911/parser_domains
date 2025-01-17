@@ -57,9 +57,7 @@ class ParserView(TemplateView):
         _type = self.request.GET.get("type_check")
         if _type == "NOTSHOW":
             return UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good=None)
-        q = UploadDataModel.objects.filter(is_showing=True, status="GOOD")
-        print("ZALUPA", q.explain())
-        return q
+        return UploadDataModel.objects.filter(is_showing=True, status="GOOD")
 
     def get_type(self):
         return self.request.GET.get("type_check", None)
