@@ -293,8 +293,20 @@ def delete_dublicate(request):
     return HttpResponse('Good')
 
 def test_work_with_db(request):
-    print("not NTH", len(UploadDataModel.objects.filter(~Q(status='NTH'))))
-    print("NTH", len(UploadDataModel.objects.filter(Q(status='NTH'))))
-    print("is s True, status GOOD", len(UploadDataModel.objects.filter(is_showing=True, status="GOOD").order_by('id')))
-    print("all", len(UploadDataModel.objects.all().order_by('id')))
+    q1 = UploadDataModel.objects.filter(~Q(status='NTH'))
+    print("explain 1", q1.explain())
+    print("not NTH", len(q1))
+
+    q2 = UploadDataModel.objects.filter(Q(status='NTH'))
+    print("explain 2", q2.explain())
+    print("NTH", len(q2))
+
+    q3 = UploadDataModel.objects.filter(is_showing=True, status="GOOD").order_by('id')
+    print("explain 3", q3.explain())
+    print("is s True, status GOOD", len(q3))
+    
+    q4 = UploadDataModel.objects.all().order_by('id')
+    print("explain 4", q4.explain())
+    print("all", len(q4))
+    
     return HttpResponse("kaif")
