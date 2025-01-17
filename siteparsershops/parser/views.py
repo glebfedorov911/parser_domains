@@ -294,5 +294,6 @@ def delete_dublicate(request):
 
     return HttpResponse('Good')
 
-def test_work_with_wb(request):
-    pass
+def test_work_with_db(request):
+    print(len(UploadDataModel.objects.filter(~Q(status='NTH'))))
+    return HttpResponse("kaif")

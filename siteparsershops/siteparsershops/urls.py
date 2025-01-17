@@ -17,7 +17,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
-from debug_toolbar.toolbar import debug_toolbar_urls
 
 from . import settings
 from parser.views import page_not_found
@@ -26,7 +25,7 @@ from parser.views import page_not_found
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("parser/", include("parser.urls")),
-] + debug_toolbar_urls()
+] 
 
 handler404 = page_not_found
 

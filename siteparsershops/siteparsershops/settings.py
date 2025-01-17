@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
    "cdek-prof.ru"
@@ -39,8 +39,6 @@ ALLOWED_HOSTS = [
 CSRF_TRUSTED_ORIGINS  = [
     "https://cdek-prof.ru",
 ]
-
-INTERNAL_IPS = ["127.0.0.1", "82.146.32.206"]
 
 # Application definition
 
@@ -53,7 +51,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'parser.apps.ParserConfig',
     "channels",
-    "debug_toolbar"
 ]
 
 MIDDLEWARE = [
@@ -64,7 +61,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "debug_toolbar.middleware.DebugToolbarMiddleware"
 ]
 
 ROOT_URLCONF = 'siteparsershops.urls'
