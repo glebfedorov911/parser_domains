@@ -60,12 +60,12 @@ class UploadDataModel(models.Model):
     def __str__(self):
         return self.domain
 
-    class Meta:
-        indexes = [
-            models.Index(fields=["status"]),
-            models.Index(fields=["is_showing", "status", "status_good"]),
-            models.Index(fields=["is_showing", "status"])
-        ]
+    # class Meta:
+    #     indexes = [
+    #         models.Index(fields=["status"]),
+    #         models.Index(fields=["is_showing", "status", "status_good"]),
+    #         models.Index(fields=["is_showing", "status"])
+    #     ]
 
 # class AgainDataModel(models.Model):
 #     domain = models.TextField(null=False)
