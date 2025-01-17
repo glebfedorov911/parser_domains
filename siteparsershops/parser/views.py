@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, Min
+from django.db import connection
 
 from .forms import FileForm, DateForm, ShablonForm, CheckBoxForm
 from .models import FileModel, DateModel, StatisticsModel, AgainShablonModel, DeleteShablonModel, UploadDataModel
@@ -291,3 +292,56 @@ def delete_dublicate(request):
         duplicates_queryset.exclude(id=to_keep.id).delete()
 
     return HttpResponse('Good')
+
+def explain_analyze_query(sql):
+    explain_sql = f"EXPLAIN ANALYZE {sql}"
+    
+    with connection.cursor() as cursor:
+        cursor.execute(explain_sql)
+        result = cursor.fetchall()
+    
+    return result
+
+def test_work_with_db(request):
+    try:
+        sql_q1 = """
+        SELECT * FROM parser_uploaddatamodel 
+        WHERE status != 'NTH'
+        """
+        explain_q1 = explain_analyze_query(sql_q1)
+        print("explain 1", explain_q1)
+        q1 = UploadDataModel.objects.raw(sql_q1)
+        print("not NTH", len(q1))
+
+        sql_q2 = """
+        SELECT * FROM parser_uploaddatamodel 
+        WHERE status = 'NTH'
+        """
+        explain_q2 = explain_analyze_query(sql_q2)
+        print("explain 2", explain_q2)
+        q2 = UploadDataModel.objects.raw(sql_q2)
+        print("NTH", len(q2))
+
+        sql_q3 = """
+        SELECT * FROM parser_uploaddatamodel
+        WHERE is_showing = TRUE AND status = 'GOOD'
+        ORDER BY id
+        """
+        explain_q3 = explain_analyze_query(sql_q3)
+        print("explain 3", explain_q3)
+        q3 = UploadDataModel.objects.raw(sql_q3)
+        print("is s True, status GOOD", len(q3))
+
+        sql_q4 = """
+        SELECT * FROM parser_uploaddatamodel
+        ORDER BY id
+        """
+        explain_q4 = explain_analyze_query(sql_q4)
+        print("explain 4", explain_q4)
+        q4 = UploadDataModel.objects.raw(sql_q4)
+        print("all", len(q4))
+        
+    except Exception as e:
+        print(e)
+
+    return HttpResponse("kaif")
