@@ -292,21 +292,41 @@ def delete_dublicate(request):
 
     return HttpResponse('Good')
 
+from django.db import connection
+from django.http import HttpResponse
+from .models import UploadDataModel
+from django.db.models import Q
+
+def explain_analyze_query(queryset):
+    sql = str(queryset.query)
+    
+    explain_sql = f"EXPLAIN ANALYZE {sql}"
+    
+    with connection.cursor() as cursor:
+        cursor.execute(explain_sql)
+        result = cursor.fetchall()
+    
+    return result
+
 def test_work_with_db(request):
     q1 = UploadDataModel.objects.filter(~Q(status='NTH'))
-    print("explain 1", q1.explain())
+    explain_q1 = explain_analyze_query(q1)
+    print("explain 1", explain_q1)
     print("not NTH", len(q1))
 
     q2 = UploadDataModel.objects.filter(Q(status='NTH'))
-    print("explain 2", q2.explain())
+    explain_q2 = explain_analyze_query(q2)
+    print("explain 2", explain_q2)
     print("NTH", len(q2))
 
     q3 = UploadDataModel.objects.filter(is_showing=True, status="GOOD").order_by('id')
-    print("explain 3", q3.explain())
+    explain_q3 = explain_analyze_query(q3)
+    print("explain 3", explain_q3)
     print("is s True, status GOOD", len(q3))
-    
+
     q4 = UploadDataModel.objects.all().order_by('id')
-    print("explain 4", q4.explain())
+    explain_q4 = explain_analyze_query(q4)
+    print("explain 4", explain_q4)
     print("all", len(q4))
-    
+
     return HttpResponse("kaif")
