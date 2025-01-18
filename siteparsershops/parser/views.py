@@ -324,7 +324,7 @@ def test_work_with_db(request):
         with open(r'data.txt', 'a') as file:
             for i in data:
                 for j in i:
-                    tabulation_data = f"Дата: {i.date}\tДомен для парсинга: {i.domain_for_parsing}\tДомен: {i.domain}\tТелефон: {i.phone}\tПочта: {i.email}\tИНН: {i.inn}\tООО: {i.ooo}\tИП: {i.ip}\tПроверено: {i.is_check}\tПоказывать: {i.is_showing}\tБыл успешно спаршен: {i.it_was_good}\tСтатус парсинга: {i.status}\tСтатус успешного: {i.status_good}\t"
+                    tabulation_data = f"Дата: {j.date}\tДомен для парсинга: {j.domain_for_parsing}\tДомен: {j.domain}\tТелефон: {j.phone}\tПочта: {j.email}\tИНН: {j.inn}\tООО: {j.ooo}\tИП: {j.ip}\tПроверено: {j.is_check}\tПоказывать: {j.is_showing}\tБыл успешно спаршен: {j.it_was_good}\tСтатус парсинга: {j.status}\tСтатус успешного: {j.status_good}\t"
                     file.write('-='*20+'\n')
                     file.write(tabulation_data)
                     file.write('\n')
