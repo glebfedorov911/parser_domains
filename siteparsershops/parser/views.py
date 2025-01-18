@@ -393,6 +393,7 @@ def all_data_to_calendar(request):
     return HttpResponse('success')
 
 def check_count_status_good(request):
-    print(len(UploadDataModel.objects.filter(status_good=None)))
+    print("None", len(UploadDataModel.objects.filter(status_good=None)))
+    print("not None", len(UploadDataModel.objects.filter(~Q(status_good=None))))
 
     return HttpResponse('success')
