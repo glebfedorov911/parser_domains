@@ -299,7 +299,7 @@ def test_work_with_db(request):
         os.remove(r'data.txt')
     with open(r'data.txt', 'a') as file:
         for i in UploadDataModel.objects.all()[:500]:
-            tabulation_data = f"Дата: {i.date}\tДомен для парсинга: {i.domain_for_parsing}\tДомен: {i.domain}\tТелефон: {i.phone}\tПочта: {i.email}\tИНН: {i.inn}\tООО: {i.ooo}\tИП: {i.ip}\tПроверено: {i.is_check}\tПоказывать: {i.is_showing}\tБал успешно спаршен: {i.it_was_good}\tСтатус парсинга: {i.status}\tСтатус успешного: {i.status_good}\t"
+            tabulation_data = f"Дата: {i.date}\tДомен для парсинга: {i.domain_for_parsing}\tДомен: {i.domain}\tТелефон: {i.phone}\tПочта: {i.email}\tИНН: {i.inn}\tООО: {i.ooo}\tИП: {i.ip}\tПроверено: {i.is_check}\tПоказывать: {i.is_showing}\tБыл успешно спаршен: {i.it_was_good}\tСтатус парсинга: {i.status}\tСтатус успешного: {i.status_good}\t"
             file.write('-='*20+'\n')
             file.write(tabulation_data)
             file.write('\n')
