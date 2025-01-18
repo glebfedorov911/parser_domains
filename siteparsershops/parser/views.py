@@ -393,8 +393,11 @@ def all_data_to_calendar(request):
     DateForCalendar.objects.bulk_create(date)
     return HttpResponse('success')
 
-def check_count_status_good(request):
-    print("None", len(UploadDataModel.objects.filter(status_good=None)))
-    print("not None", len(UploadDataModel.objects.filter(~Q(status_good=None))))
+def delete_sites_with_status_good_none(request):
+    # print("None", len(UploadDataModel.objects.filter(status_good=None)))
+    # print("not None", len(UploadDataModel.objects.filter(~Q(status_good=None))))
+    
+    print(len(UploadDataModel.objects.filter(status_good=None)))
+    # UploadDataModel.objects.filter(status_good=None).delete()
 
     return HttpResponse('success')
