@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, FileResponse, Http404
 from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 from django.core.cache import cache
@@ -306,3 +306,11 @@ def test_work_with_db(request):
     #         file.write('\n')
     print("готово")
     return HttpResponse("kaif")
+
+def download_file(request, file_name):
+    if not os.path.exists(file_name):
+        raise Http404("Файл не найден.")
+
+    response = FileResponse(open(file_path, 'rb'), as_attachment=True)
+    response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+    return response
