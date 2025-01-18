@@ -60,7 +60,7 @@ class UploadDataModel(models.Model):
     def __str__(self):
         return self.domain
 
-class DateForCalendarColorsColors(models.Model):
+class DateForCalendars(models.Model):
     CHOICES = (
         ("NTH", "Даты загружены, но не спаршены"),
         ("SCF", "Даты спаршены"),

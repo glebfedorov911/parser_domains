@@ -12,7 +12,7 @@ from .forms import FileForm, DateForm, ShablonForm, CheckBoxForm
 from .models import (
     FileModel, DateModel, StatisticsModel,
     AgainShablonModel, DeleteShablonModel, UploadDataModel,
-    DateForCalendarColors
+    DateForCalendars
 )
 from .parser import parser, data_from_file, split_file
 from siteparsershops.settings import MEDIA_ROOT
@@ -44,8 +44,8 @@ class ParserView(TemplateView):
             "form_shablon": self.form_shablon,
             "form_checkbox": self.form_checkbox,
             "is_start_parser": self._is_start_parser,
-            "date_in_parser_with_nth_status": ','.join(list({date.date for date in DateForCalendarColors.objects.filter(status='NTH')})),
-            "date_in_parser_already_parse": ','.join(list({date.date for date in DateForCalendarColors.objects.filter(~Q(status='NTH'))})),
+            "date_in_parser_with_nth_status": ','.join(list({date.date for date in DateForCalendars.objects.filter(status='NTH')})),
+            "date_in_parser_already_parse": ','.join(list({date.date for date in DateForCalendars.objects.filter(~Q(status='NTH'))})),
             "showdata": self.get_paginated_data(),
             "type_check": self.get_type(),
             **self.get_statistics(),
@@ -141,7 +141,7 @@ class ParserView(TemplateView):
 
     def delete_all_date(self, all_data) -> None:
         date = self.get_data_from_all_data(all_data=all_data)
-        DateForCalendarColors.objects.filter(date__in=date, status="NTH").delete()
+        DateForCalendars.objects.filter(date__in=date, status="NTH").delete()
     
     def save_another_list(self, rows, status):
         upload = [
@@ -195,15 +195,15 @@ class ParserView(TemplateView):
 
     def create_collection_with_skip_dates(self, all_data, status="NTH") -> list:
         return [
-            "skip" if self.get_date_for_calendar_data(date=date, status=status) else DateForCalendarColors(date=date, status=status) 
+            "skip" if self.get_date_for_calendar_data(date=date, status=status) else DateForCalendars(date=date, status=status) 
             for date in self.get_data_from_all_data(all_data=all_data) 
         ]
 
     def get_data_from_all_data(self, all_data) -> set:
         return {row[0] for row in all_data} 
 
-    def get_date_for_calendar_data(self, date, status="NTH") -> list[DateForCalendarColors]:
-        return DateForCalendarColors.objects.filter(date=date, status=status)
+    def get_date_for_calendar_data(self, date, status="NTH") -> list[DateForCalendars]:
+        return DateForCalendars.objects.filter(date=date, status=status)
     
     def delete_skip(self, date: list) -> list:
         return [
@@ -211,7 +211,7 @@ class ParserView(TemplateView):
         ] 
     
     def bulk_create_data_for_calendare(self, data: list) -> None:
-        DateForCalendarColors.objects.bulk_create(data)
+        DateForCalendars.objects.bulk_create(data)
 
     def save_shablon(self, obj, code):
         delete = obj.objects.create(code=code)
@@ -385,8 +385,8 @@ def download_file(request, file_name):
 def all_data_to_calendar(request):
     upload = UploadDataModel.objects.all()
     date = [
-        DateForCalendarColors(date=up.date, status='SCF')
+        DateForCalendars(date=up.date, status='SCF')
         for up in upload
     ]
-    DateForCalendarColors.objects.bulk_create(date)
+    DateForCalendars.objects.bulk_create(date)
     return HttpResponse('success')
