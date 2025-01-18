@@ -66,5 +66,5 @@ class DateForCalendar(models.Model):
         ("SCF", "Даты спаршены"),
     )
 
-    status = models.CharField(max_length=5, null=True, default="NTH", choices=CHOICES)
+    status = models.CharField(max_length=5, blank=True, null=True, default="NTH", choices=CHOICES)
     date = models.TextField(null=False)
