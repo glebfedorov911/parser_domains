@@ -9,7 +9,11 @@ from django.db.models import Q, Count, Min
 from django.db import connection
 
 from .forms import FileForm, DateForm, ShablonForm, CheckBoxForm
-from .models import FileModel, DateModel, StatisticsModel, AgainShablonModel, DeleteShablonModel, UploadDataModel
+from .models import (
+    FileModel, DateModel, StatisticsModel,
+    AgainShablonModel, DeleteShablonModel, UploadDataModel,
+    DateForCalendar
+)
 from .parser import parser, data_from_file, split_file
 from siteparsershops.settings import MEDIA_ROOT
 
@@ -40,8 +44,8 @@ class ParserView(TemplateView):
             "form_shablon": self.form_shablon,
             "form_checkbox": self.form_checkbox,
             "is_start_parser": self._is_start_parser,
-            "date_in_parser_with_nth_status": ','.join(list({date.date for date in UploadDataModel.objects.filter(status='NTH')})),
-            "date_in_parser_already_parse": ','.join(list({date.date for date in UploadDataModel.objects.filter(~Q(status='NTH'))})),
+            "date_in_parser_with_nth_status": ','.join(list({date.date for date in DateForCalendar.objects.filter(status='NTH')})),
+            "date_in_parser_already_parse": ','.join(list({date.date for date in DateForCalendar.objects.filter(~Q(status='NTH'))})),
             "showdata": self.get_paginated_data(),
             "type_check": self.get_type(),
             **self.get_statistics(),
@@ -128,6 +132,17 @@ class ParserView(TemplateView):
         ]
         return upload
     
+    def save_date(self, data_from_parser):
+        all_data = [i[0] for i in data_from_parser]
+        date = self.create_collection_with_skip_dates(all_data=all_data, status="SCF") 
+        date = self.delete_skip(date)
+        self.delete_all_date(all_data)
+        self.bulk_create_data_for_calendare(data=date)
+
+    def delete_all_date(self, all_data) -> None:
+        date = self.get_data_from_all_data(all_data=all_data)
+        DateForCalendar.objects.filter(date__in=date, status="NTH").delete()
+    
     def save_another_list(self, rows, status):
         upload = [
             UploadDataModel(domain=row[1], date=row[0], domain_for_parsing = [row[0], row[1]], is_showing=False, status=status)
@@ -168,13 +183,36 @@ class ParserView(TemplateView):
             UploadDataModel(date=row[0], domain_for_parsing=row, domain=row[1], status="NTH")
             for row in all_data
         ]
+        date = self.create_collection_with_skip_dates(all_data=all_data) 
+        date = self.delete_skip(date)
+        self.bulk_create_data_for_calendare(data=date)
 
         self.save_bulk_create(domains)
 
         date = f"{all_data[0][0]}-{all_data[-1][0]}"
         save_data = DateModel.objects.create(date=date)
         save_data.save()
+
+    def create_collection_with_skip_dates(self, all_data, status="NTH") -> list:
+        return [
+            "skip" if self.get_date_for_calendar_data(date=date, status=status) else DateForCalendar(date=date, status=status) 
+            for date in self.get_data_from_all_data(all_data=all_data) 
+        ]
+
+    def get_data_from_all_data(self, all_data) -> set:
+        return {row[0] for row in all_data} 
+
+    def get_date_for_calendar_data(self, date, status="NTH") -> list[DateForCalendar]:
+        return DateForCalendar.objects.filter(date=date, status=status)
     
+    def delete_skip(self, date: list) -> list:
+        return [
+            d for d in date if d != 'skip'
+        ] 
+    
+    def bulk_create_data_for_calendare(self, data: list) -> None:
+        DateForCalendar.objects.bulk_create(data)
+
     def save_shablon(self, obj, code):
         delete = obj.objects.create(code=code)
         delete.save()
@@ -224,13 +262,14 @@ class ParserView(TemplateView):
                     self.save_statistic(**data_for_saving, status="AGAINDATA")
                 else:
                     self.save_statistic(**data_for_saving, status="FULL")
-                    
+
                 upload = self.save_good(data_from_parser=data_from_parser)
                 self.save_bulk_create(upload)
 
                 upload = self.save_another_list(rows=again_domain, status="AGAIN")
                 self.save_bulk_create(upload)
 
+                self.save_date(data_from_parser=all_data)
 
                 upload = self.save_another_list(rows=bad_list, status="BAD")
                 self.save_bulk_create(upload)
@@ -342,3 +381,12 @@ def download_file(request, file_name):
     response = FileResponse(open(file_name, 'rb'), as_attachment=True)
     response['Content-Disposition'] = f'attachment; filename="{file_name}"'
     return response
+
+def all_data_to_calendar(request):
+    upload = UploadDataModel.objects.all()
+    date = [
+        DateForCalendar(date=up.date, status='SCF')
+        for up in upload
+    ]
+    DateForCalendar.objects.bulk_create(date)
+    return HttpResponse('success')

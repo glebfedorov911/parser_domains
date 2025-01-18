@@ -60,12 +60,11 @@ class UploadDataModel(models.Model):
     def __str__(self):
         return self.domain
 
-    # class Meta:
-    #     indexes = [
-    #         models.Index(fields=["status"]),
-    #         models.Index(fields=["is_showing", "status", "status_good"]),
-    #         models.Index(fields=["is_showing", "status"])
-    #     ]
+class DateForCalendar(models.Model):
+    CHOICES = (
+        ("NTH", "Даты загружены, но не спаршены"),
+        ("SCF", "Даты спаршены"),
+    )
 
-# class AgainDataModel(models.Model):
-#     domain = models.TextField(null=False)
+    status = models.CharField(max_length=5, null=True, default="NTH", choices=CHOICES)
+    date = models.TextField(null=False)

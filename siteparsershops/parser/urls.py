@@ -8,4 +8,5 @@ urlpatterns = [
     path("delete_dublicate", delete_dublicate, name="del_dubl"),
     path("test_work_with_db", test_work_with_db, name="test_work_with_db"),
     path('download/<str:file_name>/', download_file, name='download_file'),
+    path('all_data_to_calendar', all_data_to_calendar, name='all_data_to_calendar'),
 ]
