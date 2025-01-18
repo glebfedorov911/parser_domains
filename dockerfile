@@ -18,7 +18,6 @@ EXPOSE 8000
 
 CMD ["sh", "-c", \
     "./venv/bin/python manage.py migrate parser 0018 --fake && \
-    ./venv/bin/python manage.py migrate parser 0019 --noinput && \
-    ./venv/bin/python manage.py makemigrations parser && \
+    ./venv/bin/python manage.py migrate parser 0019 --fake && \
     ./venv/bin/python manage.py migrate --noinput && \
     ./venv/bin/python -m uvicorn siteparsershops.asgi:application --host 0.0.0.0 --port 8000"]
