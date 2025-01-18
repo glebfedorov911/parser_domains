@@ -295,8 +295,8 @@ def delete_dublicate(request):
     return HttpResponse('Good')
 
 def test_work_with_db(request):
-    if os.path.exists('siteparsershops\parser\data.txt'):
-        os.remove('siteparsershops\parser\data.txt')
+    if os.path.exists(r'siteparsershops\parser\data.txt'):
+        os.remove(r'siteparsershops\parser\data.txt')
     with open(r'siteparsershops\parser\data.txt', 'a') as file:
         for i in UploadDataModel.objects.all()[:500]:
             tabulation_data = f"{i.date}\t{i.domain_for_parsing}\t{i.domain}\t{i.phone}\t{i.email}\t{i.inn}\t{i.ooo}\t{i.ip}\t{i.is_check}\t{i.is_showing}\t{i.it_was_good}\t{i.status}\t{i.status_good}\t"
