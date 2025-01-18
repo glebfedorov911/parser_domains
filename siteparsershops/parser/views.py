@@ -306,12 +306,9 @@ def test_work_with_db(request):
     return HttpResponse("kaif")
 
 def download_file(request, file_name):
-    try:
-        if not os.path.exists(file_name):
-            return HttpResponse("Файл не найден.")
+    if not os.path.exists(file_name):
+        return HttpResponse("Файл не найден.")
 
-        response = FileResponse(open(file_path, 'rb'), as_attachment=True)
-        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
-        return response
-    except Exception as e:
-        print(e)
+    response = FileResponse(open(file_name, 'rb'), as_attachment=True)
+    response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+    return response
