@@ -391,3 +391,8 @@ def all_data_to_calendar(request):
     ]
     DateForCalendar.objects.bulk_create(date)
     return HttpResponse('success')
+
+def check_count_status_good(request):
+    print(len(UploadDataModel.objects.filter(status_good=None)))
+
+    return HttpResponse('success')
