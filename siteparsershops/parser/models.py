@@ -60,11 +60,11 @@ class UploadDataModel(models.Model):
     def __str__(self):
         return self.domain
 
-class DateForCalendar(models.Model):
-    CHOICES = (
-        ("NTH", "Даты загружены, но не спаршены"),
-        ("SCF", "Даты спаршены"),
-    )
+# class DateForCalendar(models.Model):
+    # CHOICES = (
+    #     ("NTH", "Даты загружены, но не спаршены"),
+    #     ("SCF", "Даты спаршены"),
+    # )
 
-    status = models.CharField(max_length=5, blank=True, null=True, default="NTH", choices=CHOICES)
-    date = models.TextField(null=False)
+    # status = models.CharField(max_length=5, blank=True, null=True, default="NTH", choices=CHOICES)
+    # date = models.TextField(null=False)
