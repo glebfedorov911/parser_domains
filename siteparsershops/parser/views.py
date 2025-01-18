@@ -296,7 +296,7 @@ def delete_dublicate(request):
 def test_work_with_db(request):
     with open(r'siteparsershops\parser\data.txt', 'a') as file:
         for i in UploadDataModel.objects.all()[:500]:
-            print(i)
-            # file.write(i)
-            # file.write('\n')
+            tabulation_data = f"{i.date}\t{i.domain_for_parsing}\t{i.domain}\t{i.phone}\t{i.email}\t{i.inn}\t{i.ooo}\t{i.ip}\t{i.is_check}\t{i.is_showing}\t{i.it_was_good}\t{i.status}\t{i.status_good}\t"
+            file.write(tabulation_data)
+            file.write('\n')
     return HttpResponse("kaif")
