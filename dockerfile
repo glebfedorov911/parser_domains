@@ -17,6 +17,7 @@ ENV PYTHONUNBUFFERED=1 \
 EXPOSE 8000
 
 CMD ["sh", "-c", \
-    "./venv/bin/python manage.py makemigrations parser && \
-    ./venv/bin/python manage.py migrate --noinput --fake-initial && \
+    "./venv/bin/python manage.py migrate parser 0018_uploaddatamodel_it_was_good --fake && \
+    ./venv/bin/python manage.py makemigrations parser && \
+    ./venv/bin/python manage.py migrate --noinput && \
     ./venv/bin/python -m uvicorn siteparsershops.asgi:application --host 0.0.0.0 --port 8000"]
