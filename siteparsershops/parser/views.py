@@ -295,41 +295,45 @@ def delete_dublicate(request):
     return HttpResponse('Good')
 
 def test_work_with_db(request):
-    data = [
-        UploadDataModel.objects.filter(is_showing=True, status="GOOD")[:200],
-        UploadDataModel.objects.filter(is_showing=True, status="BAD")[:200],
-        UploadDataModel.objects.filter(is_showing=True, status="AGAIN")[:200],
-        UploadDataModel.objects.filter(is_showing=True, status="NTH")[:200],
-        UploadDataModel.objects.filter(is_showing=True, status="DEL")[:200],
-        UploadDataModel.objects.filter(is_showing=False, status="GOOD")[:200],
-        UploadDataModel.objects.filter(is_showing=False, status="BAD")[:200],
-        UploadDataModel.objects.filter(is_showing=False, status="AGAIN")[:200],
-        UploadDataModel.objects.filter(is_showing=False, status="NTH")[:200],
-        UploadDataModel.objects.filter(is_showing=False, status="DEL")[:200],
-        UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good=None)[:200],
-        UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="TAKE")[:200],
-        UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="ALREADY")[:200],
-        UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="NOTNEED")[:200],
-        UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="DOESNOT")[:200],
-        UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good=None)[:200],
-        UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="TAKE")[:200],
-        UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="ALREADY")[:200],
-        UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="NOTNEED")[:200],
-        UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="DOESNOT")[:200],
-    ]
+    try:
+        data = [
+            UploadDataModel.objects.filter(is_showing=True, status="GOOD")[:200],
+            UploadDataModel.objects.filter(is_showing=True, status="BAD")[:200],
+            UploadDataModel.objects.filter(is_showing=True, status="AGAIN")[:200],
+            UploadDataModel.objects.filter(is_showing=True, status="NTH")[:200],
+            UploadDataModel.objects.filter(is_showing=True, status="DEL")[:200],
+            UploadDataModel.objects.filter(is_showing=False, status="GOOD")[:200],
+            UploadDataModel.objects.filter(is_showing=False, status="BAD")[:200],
+            UploadDataModel.objects.filter(is_showing=False, status="AGAIN")[:200],
+            UploadDataModel.objects.filter(is_showing=False, status="NTH")[:200],
+            UploadDataModel.objects.filter(is_showing=False, status="DEL")[:200],
+            UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good=None)[:200],
+            UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="TAKE")[:200],
+            UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="ALREADY")[:200],
+            UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="NOTNEED")[:200],
+            UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="DOESNOT")[:200],
+            UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good=None)[:200],
+            UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="TAKE")[:200],
+            UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="ALREADY")[:200],
+            UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="NOTNEED")[:200],
+            UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="DOESNOT")[:200],
+        ]
 
-    if os.path.exists(r'data.txt'):
-        os.remove(r'data.txt')
-    with open(r'data.txt', 'a') as file:
-        for i in data:
-            for j in i:
-                tabulation_data = f"Дата: {i.date}\tДомен для парсинга: {i.domain_for_parsing}\tДомен: {i.domain}\tТелефон: {i.phone}\tПочта: {i.email}\tИНН: {i.inn}\tООО: {i.ooo}\tИП: {i.ip}\tПроверено: {i.is_check}\tПоказывать: {i.is_showing}\tБыл успешно спаршен: {i.it_was_good}\tСтатус парсинга: {i.status}\tСтатус успешного: {i.status_good}\t"
-                file.write('-='*20+'\n')
-                file.write(tabulation_data)
-                file.write('\n')
-                file.write('-='*20+'\n')
-    print("готово")
-    return HttpResponse("kaif")
+        if os.path.exists(r'data.txt'):
+            os.remove(r'data.txt')
+        with open(r'data.txt', 'a') as file:
+            for i in data:
+                for j in i:
+                    tabulation_data = f"Дата: {i.date}\tДомен для парсинга: {i.domain_for_parsing}\tДомен: {i.domain}\tТелефон: {i.phone}\tПочта: {i.email}\tИНН: {i.inn}\tООО: {i.ooo}\tИП: {i.ip}\tПроверено: {i.is_check}\tПоказывать: {i.is_showing}\tБыл успешно спаршен: {i.it_was_good}\tСтатус парсинга: {i.status}\tСтатус успешного: {i.status_good}\t"
+                    file.write('-='*20+'\n')
+                    file.write(tabulation_data)
+                    file.write('\n')
+                    file.write('-='*20+'\n')
+        print("готово")
+        return HttpResponse("kaif")
+    except Exception as e:
+        print(e)
+
 
 def download_file(request, file_name):
     if not os.path.exists(file_name):
