@@ -384,9 +384,10 @@ def download_file(request, file_name):
 
 def all_data_to_calendar(request):
     upload = UploadDataModel.objects.all()
+    dates = {up.date for up in upload}
     date = [
-        DateForCalendar(date=up.date, status='SCF')
-        for up in upload
+        DateForCalendar(date=d, status='SCF')
+        for d in dates
     ]
     DateForCalendar.objects.bulk_create(date)
     return HttpResponse('success')
