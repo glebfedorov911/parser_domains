@@ -358,9 +358,9 @@ def test_work_with_db(request):
             UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="DOESNOT")[:200],
         ]
 
-        if os.path.exists(r'data.txt'):
-            os.remove(r'data.txt')
-        with open(r'data.txt', 'a') as file:
+        if os.path.exists(r'data1.txt'):
+            os.remove(r'data1.txt')
+        with open(r'data1.txt', 'a') as file:
             for i in data:
                 for j in i:
                     tabulation_data = f"Дата: {j.date}\tДомен для парсинга: {j.domain_for_parsing}\tДомен: {j.domain}\tТелефон: {j.phone}\tПочта: {j.email}\tИНН: {j.inn}\tООО: {j.ooo}\tИП: {j.ip}\tПроверено: {j.is_check}\tПоказывать: {j.is_showing}\tБыл успешно спаршен: {j.it_was_good}\tСтатус парсинга: {j.status}\tСтатус успешного: {j.status_good}\t"
