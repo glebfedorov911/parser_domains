@@ -300,8 +300,10 @@ def test_work_with_db(request):
     with open(r'data.txt', 'a') as file:
         for i in UploadDataModel.objects.all()[:500]:
             tabulation_data = f"{i.date}\t{i.domain_for_parsing}\t{i.domain}\t{i.phone}\t{i.email}\t{i.inn}\t{i.ooo}\t{i.ip}\t{i.is_check}\t{i.is_showing}\t{i.it_was_good}\t{i.status}\t{i.status_good}\t"
+            file.write('-='*20+'\n')
             file.write(tabulation_data)
             file.write('\n')
+            file.write('-='*20+'\n')
     print("готово")
     return HttpResponse("kaif")
 
