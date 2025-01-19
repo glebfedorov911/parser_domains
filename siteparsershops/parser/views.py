@@ -336,27 +336,11 @@ def delete_dublicate(request):
 def test_work_with_db(request):
     try:
         data = [
-            UploadDataModel.objects.filter(is_showing=True, status="GOOD")[:200],
-            UploadDataModel.objects.filter(is_showing=True, status="BAD")[:200],
-            UploadDataModel.objects.filter(is_showing=True, status="AGAIN")[:200],
-            UploadDataModel.objects.filter(is_showing=True, status="NTH")[:200],
-            UploadDataModel.objects.filter(is_showing=True, status="DEL")[:200],
-            UploadDataModel.objects.filter(is_showing=False, status="GOOD")[:200],
-            UploadDataModel.objects.filter(is_showing=False, status="BAD")[:200],
-            UploadDataModel.objects.filter(is_showing=False, status="AGAIN")[:200],
-            UploadDataModel.objects.filter(is_showing=False, status="NTH")[:200],
-            UploadDataModel.objects.filter(is_showing=False, status="DEL")[:200],
-            UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good=None)[:200],
-            UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="TAKE")[:200],
-            UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="ALREADY")[:200],
-            UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="NOTNEED")[:200],
-            UploadDataModel.objects.filter(is_showing=True, status="GOOD", status_good="DOESNOT")[:200],
-            UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good=None)[:200],
-            UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="TAKE")[:200],
-            UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="ALREADY")[:200],
-            UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="NOTNEED")[:200],
-            UploadDataModel.objects.filter(is_showing=False, status="GOOD", status_good="DOESNOT")[:200],
-            UploadDataModel.objects.filter(~Q(status_good=None))
+            UploadDataModel.objects.filter(
+                ~Q(status="GOOD") & ~Q(status="AGAIN"),
+                is_showing=False,
+                status_good=None
+            )
         ]
 
         if os.path.exists(r'data1.txt'):
@@ -395,6 +379,12 @@ def all_data_to_calendar(request):
 
 def delete_sites_with_status_good_none(request):
     # UploadDataModel.objects.filter(status_good=None).delete()
-    print(len(UploadDataModel.objects.filter(~Q(status="GOOD"), is_showing=False, status_good=None)))
+    print(len(
+        UploadDataModel.objects.filter(
+            ~Q(status="GOOD") & ~Q(status="AGAIN"),
+            is_showing=False,
+            status_good=None
+        )
+    ))
 
     return HttpResponse('success')
