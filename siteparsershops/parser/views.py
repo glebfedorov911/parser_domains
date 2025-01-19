@@ -378,13 +378,10 @@ def all_data_to_calendar(request):
     return HttpResponse('success')
 
 def delete_sites_with_status_good_none(request):
-    # UploadDataModel.objects.filter(status_good=None).delete()
-    print(len(
-        UploadDataModel.objects.filter(
-            ~Q(status="GOOD") & ~Q(status="AGAIN"),
-            is_showing=False,
-            status_good=None
-        )
-    ))
+    UploadDataModel.objects.filter(
+        ~Q(status="GOOD") & ~Q(status="AGAIN"),
+        is_showing=False,
+        status_good=None
+    ).delete()
 
     return HttpResponse('success')
